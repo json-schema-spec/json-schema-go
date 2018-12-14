@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -41,6 +42,17 @@ func TestValidate(t *testing.T) {
 		err = json.Unmarshal(data, &suites)
 		if err != nil {
 			return err
+		}
+
+		for i, suite := range suites {
+			validator := NewValidator(suite.Schema)
+
+			for j, test := range suite.Tests {
+				name := fmt.Sprintf("%s/%d/%d", path, i, j)
+				t.Run(name, func(t *testing.T) {
+					assert.Equal(t, test.Valid, validator.IsValid(test.Data))
+				})
+			}
 		}
 
 		return nil
