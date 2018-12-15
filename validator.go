@@ -22,11 +22,15 @@ func NewValidator(schema Schema) Validator {
 }
 
 func (v Validator) IsValid(data interface{}) bool {
-	if v.schema.IsTrivial {
-		return v.schema.TrivialValue
+	return v.isValid(data, v.schema)
+}
+
+func (v Validator) isValid(data interface{}, schema Schema) bool {
+	if schema.IsTrivial {
+		return schema.TrivialValue
 	}
 
-	document := v.schema.Document
+	document := schema.Document
 
 	if document.Minimum != nil {
 		if num, ok := data.(float64); ok {
@@ -97,6 +101,24 @@ func (v Validator) IsValid(data interface{}) bool {
 
 			if !re.MatchString(str) {
 				return false
+			}
+		}
+	}
+
+	if document.Items != nil {
+		if arr, ok := data.([]interface{}); ok {
+			if document.Items.IsSingle {
+				for _, val := range arr {
+					if !v.isValid(val, document.Items.Single) {
+						return false
+					}
+				}
+			} else {
+				for i, s := range document.Items.List[:len(arr)] {
+					if !v.isValid(arr[i], s) {
+						return false
+					}
+				}
 			}
 		}
 	}
