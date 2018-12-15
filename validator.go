@@ -1,12 +1,21 @@
 package jsonschema
 
+import (
+	"math"
+)
+
+// DefaultEpsilon determines the tolerance for error in floating point comparisons. This value is always used in a
+const DefaultEpsilon float64 = 1e-3
+
 type Validator struct {
-	schema Schema
+	schema  Schema
+	Epsilon float64
 }
 
 func NewValidator(schema Schema) Validator {
 	return Validator{
-		schema: schema,
+		schema:  schema,
+		Epsilon: DefaultEpsilon,
 	}
 }
 
@@ -44,6 +53,16 @@ func (v Validator) IsValid(data interface{}) bool {
 	if document.ExclusiveMaximum != nil {
 		if num, ok := data.(float64); ok {
 			if num >= *document.ExclusiveMaximum {
+				return false
+			}
+		}
+	}
+
+	if document.MultipleOf != nil {
+		if num, ok := data.(float64); ok {
+			mod := math.Mod(math.Abs(num), *document.MultipleOf) / *document.MultipleOf
+
+			if mod > v.Epsilon && mod < 1-v.Epsilon {
 				return false
 			}
 		}
