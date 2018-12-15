@@ -58,6 +58,5 @@ func TestValidate(t *testing.T) {
 		return nil
 	})
 
-	assert.NotNil(t, err)
 	assert.Nil(t, err)
 }

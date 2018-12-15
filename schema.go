@@ -29,11 +29,11 @@ type Document struct {
 	Default              *interface{}                 `json:"default"`
 	ReadOnly             *bool                        `json:"readOnly"`
 	Examples             *[]interface{}               `json:"examples"`
-	MultipleOf           *float32                     `json:"multipleOf"`
-	Maximum              *float32                     `json:"maximum"`
-	ExclusiveMaximum     *float32                     `json:"exclusiveMaximum"`
-	Minimum              *float32                     `json:"minimum"`
-	ExclusiveMinimum     *float32                     `json:"exclusiveMinimum"`
+	MultipleOf           *float64                     `json:"multipleOf"`
+	Maximum              *float64                     `json:"maximum"`
+	ExclusiveMaximum     *float64                     `json:"exclusiveMaximum"`
+	Minimum              *float64                     `json:"minimum"`
+	ExclusiveMinimum     *float64                     `json:"exclusiveMinimum"`
 	MaxLength            *uint                        `json:"maxLength"`
 	MinLength            *uint                        `json:"minLength"`
 	Pattern              *string                      `json:"pattern"`
