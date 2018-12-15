@@ -114,9 +114,22 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 					}
 				}
 			} else {
-				for i, s := range document.Items.List[:len(arr)] {
+				numItems := len(arr)
+				if numItems > len(document.Items.List) {
+					numItems = len(document.Items.List)
+				}
+
+				for i, s := range document.Items.List[:numItems] {
 					if !v.isValid(arr[i], s) {
 						return false
+					}
+				}
+
+				if document.AdditionalItems != nil {
+					for _, val := range arr[numItems:] {
+						if !v.isValid(val, *document.AdditionalItems) {
+							return false
+						}
 					}
 				}
 			}
