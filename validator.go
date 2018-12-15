@@ -77,5 +77,13 @@ func (v Validator) IsValid(data interface{}) bool {
 		}
 	}
 
+	if document.MinLength != nil {
+		if str, ok := data.(string); ok {
+			if utf8.RuneCountInString(str) < *document.MinLength {
+				return false
+			}
+		}
+	}
+
 	return true
 }
