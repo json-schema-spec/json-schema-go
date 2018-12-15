@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"math"
+	"reflect"
 	"regexp"
 	"unicode/utf8"
 )
@@ -148,6 +149,16 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		if arr, ok := data.([]interface{}); ok {
 			if len(arr) < *document.MinItems {
 				return false
+			}
+		}
+	}
+
+	if document.UniqueItems != nil {
+		if arr, ok := data.([]interface{}); ok && len(arr) > 0 {
+			for _, val := range arr[1:] {
+				if reflect.DeepEqual(arr[0], val) {
+					return false
+				}
 			}
 		}
 	}
