@@ -163,34 +163,4 @@ func (s *Schema) UnmarshalJSON(data []byte) error {
 	s.TrivialValue = trivialValue
 	s.Document = document
 	return nil
-
-	// // First, attempt to parse the data as a boolean. If this succeeds, then the
-	// // document is a trivial one.
-	// var boolean bool
-	// err := json.Unmarshal(data, &boolean)
-	// if err == nil {
-	// 	// Atypical logic here: we are checking for a *lack* of errors, in order to
-	// 	// bail early.
-	// 	s.IsTrivial = true
-	// 	s.TrivialValue = boolean
-	// 	return nil
-	// }
-
-	// // Determine if the parse failed due to being marshalled into the wrong type.
-	// // If so, then attempt to re-parse the data as a Document.
-	// if _, ok := err.(*json.UnmarshalTypeError); !ok {
-	// 	// The error was not UnmarshalTypeError. This is an unexpected error.
-	// 	return err
-	// }
-
-	// // The previous parse led to an UnmarshalTypeError. Attept to re-parse.
-	// var document Document
-	// err = json.Unmarshal(data, &document)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// s.IsTrivial = false
-	// s.Document = document
-	// return nil
 }

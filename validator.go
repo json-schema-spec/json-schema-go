@@ -101,5 +101,59 @@ func (v Validator) IsValid(data interface{}) bool {
 		}
 	}
 
+	if document.Type != nil {
+		if document.Type.IsSingle {
+			if !assertSimpleType(document.Type.Single, data) {
+				return false
+			}
+		} else {
+			allFailed := true
+			for _, simpleType := range document.Type.List {
+				if assertSimpleType(simpleType, data) {
+					allFailed = false
+				}
+			}
+
+			if allFailed {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func assertSimpleType(simpleType SimpleType, data interface{}) bool {
+	switch simpleType {
+	case IntegerSimpleType:
+		if num, ok := data.(float64); !ok || num != math.Trunc(num) {
+			return false
+		}
+	case NumberSimpleType:
+		if _, ok := data.(float64); !ok {
+			return false
+		}
+	case StringSimpleType:
+		if _, ok := data.(string); !ok {
+			return false
+		}
+	case ObjectSimpleType:
+		if _, ok := data.(map[string]interface{}); !ok {
+			return false
+		}
+	case ArraySimpleType:
+		if _, ok := data.([]interface{}); !ok {
+			return false
+		}
+	case BooleanSimpleType:
+		if _, ok := data.(bool); !ok {
+			return false
+		}
+	case NullSimpleType:
+		if data != nil {
+			return false
+		}
+	}
+
 	return true
 }
