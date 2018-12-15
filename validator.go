@@ -136,6 +136,14 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.MaxItems != nil {
+		if arr, ok := data.([]interface{}); ok {
+			if len(arr) > *document.MaxItems {
+				return false
+			}
+		}
+	}
+
 	if document.Type != nil {
 		if document.Type.IsSingle {
 			if !assertSimpleType(document.Type.Single, data) {
