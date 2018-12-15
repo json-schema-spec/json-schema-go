@@ -144,6 +144,14 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.MinItems != nil {
+		if arr, ok := data.([]interface{}); ok {
+			if len(arr) < *document.MinItems {
+				return false
+			}
+		}
+	}
+
 	if document.Type != nil {
 		if document.Type.IsSingle {
 			if !assertSimpleType(document.Type.Single, data) {
