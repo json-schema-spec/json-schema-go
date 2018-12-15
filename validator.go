@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"math"
+	"regexp"
 	"unicode/utf8"
 )
 
@@ -80,6 +81,21 @@ func (v Validator) IsValid(data interface{}) bool {
 	if document.MinLength != nil {
 		if str, ok := data.(string); ok {
 			if utf8.RuneCountInString(str) < *document.MinLength {
+				return false
+			}
+		}
+	}
+
+	if document.Pattern != nil {
+		if str, ok := data.(string); ok {
+			re, err := regexp.Compile(*document.Pattern)
+			if err != nil {
+				// TODO: Validate inputted patterns in advance, and error on validator
+				// creation.
+				panic(err)
+			}
+
+			if !re.MatchString(str) {
 				return false
 			}
 		}
