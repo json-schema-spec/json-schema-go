@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"math"
+	"unicode/utf8"
 )
 
 // DefaultEpsilon determines the tolerance for error in floating point comparisons. This value is always used in a
@@ -63,6 +64,14 @@ func (v Validator) IsValid(data interface{}) bool {
 			mod := math.Mod(math.Abs(num), *document.MultipleOf) / *document.MultipleOf
 
 			if mod > v.Epsilon && mod < 1-v.Epsilon {
+				return false
+			}
+		}
+	}
+
+	if document.MaxLength != nil {
+		if str, ok := data.(string); ok {
+			if utf8.RuneCountInString(str) > *document.MaxLength {
 				return false
 			}
 		}

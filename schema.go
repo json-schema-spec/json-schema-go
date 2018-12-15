@@ -34,17 +34,17 @@ type Document struct {
 	ExclusiveMaximum     *float64                     `json:"exclusiveMaximum"`
 	Minimum              *float64                     `json:"minimum"`
 	ExclusiveMinimum     *float64                     `json:"exclusiveMinimum"`
-	MaxLength            *uint                        `json:"maxLength"`
-	MinLength            *uint                        `json:"minLength"`
+	MaxLength            *int                         `json:"maxLength"`
+	MinLength            *int                         `json:"minLength"`
 	Pattern              *string                      `json:"pattern"`
 	AdditionalItems      *Schema                      `json:"additionalItems"`
 	Items                *SchemaItems                 `json:"items"`
-	MaxItems             *uint                        `json:"maxItems"`
-	MinItems             *uint                        `json:"minItems"`
+	MaxItems             *int                         `json:"maxItems"`
+	MinItems             *int                         `json:"minItems"`
 	UniqueItems          *bool                        `json:"uniqueItems"`
 	Contains             *Schema                      `json:"contains"`
-	MaxProperties        *uint                        `json:"maxProperties"`
-	MinProperties        *uint                        `json:"minProperties"`
+	MaxProperties        *int                         `json:"maxProperties"`
+	MinProperties        *int                         `json:"minProperties"`
 	Required             *[]string                    `json:"required"`
 	AdditionalProperties *Schema                      `json:"additionalProperties"`
 	Definitions          *map[string]Schema           `json:"definitions"`
