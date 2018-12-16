@@ -318,6 +318,14 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.AllOf != nil {
+		for _, s := range *document.AllOf {
+			if !v.isValid(data, s) {
+				return false
+			}
+		}
+	}
+
 	return true
 }
 
