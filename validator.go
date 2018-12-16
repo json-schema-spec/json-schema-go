@@ -205,6 +205,54 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if obj, ok := data.(map[string]interface{}); ok {
+		properties := map[string]Schema{}
+		patternProperties := map[*regexp.Regexp]Schema{}
+
+		if document.Properties != nil {
+			properties = *document.Properties
+		}
+
+		if document.PatternProperties != nil {
+			for expr, s := range *document.PatternProperties {
+				re, err := regexp.Compile(expr)
+				if err != nil {
+					// TODO: Validate inputted patterns in advance, and error on validator
+					// creation.
+					panic(err)
+				}
+
+				patternProperties[re] = s
+			}
+		}
+
+		for key, val := range obj {
+			isAdditional := true
+
+			if s, ok := properties[key]; ok {
+				isAdditional = false
+				if !v.isValid(val, s) {
+					return false
+				}
+			}
+
+			for re, s := range patternProperties {
+				if re.MatchString(key) {
+					isAdditional = false
+					if !v.isValid(val, s) {
+						return false
+					}
+				}
+			}
+
+			if isAdditional && document.AdditionalProperties != nil {
+				if !v.isValid(val, *document.AdditionalProperties) {
+					return false
+				}
+			}
+		}
+	}
+
 	if document.Const != nil {
 		if !reflect.DeepEqual(data, *document.Const) {
 			return false
