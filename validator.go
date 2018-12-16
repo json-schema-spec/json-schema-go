@@ -195,6 +195,16 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.Required != nil {
+		if obj, ok := data.(map[string]interface{}); ok {
+			for _, key := range *document.Required {
+				if _, ok := obj[key]; !ok {
+					return false
+				}
+			}
+		}
+	}
+
 	if document.Const != nil {
 		if !reflect.DeepEqual(data, *document.Const) {
 			return false
