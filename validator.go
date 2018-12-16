@@ -187,6 +187,14 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.MinProperties != nil {
+		if obj, ok := data.(map[string]interface{}); ok {
+			if len(obj) < *document.MinProperties {
+				return false
+			}
+		}
+	}
+
 	if document.Const != nil {
 		if !reflect.DeepEqual(data, *document.Const) {
 			return false
