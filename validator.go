@@ -285,6 +285,19 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.Enum != nil {
+		allFailed := true
+		for _, val := range *document.Enum {
+			if reflect.DeepEqual(data, val) {
+				allFailed = false
+			}
+		}
+
+		if allFailed {
+			return false
+		}
+	}
+
 	if document.Type != nil {
 		if document.Type.IsSingle {
 			if !assertSimpleType(document.Type.Single, data) {
