@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"regexp"
@@ -163,12 +164,37 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.Contains != nil {
+		if arr, ok := data.([]interface{}); ok {
+			// TODO: Early return.
+			allFailed := true
+			for _, val := range arr {
+				if v.isValid(val, *document.Contains) {
+					allFailed = false
+				}
+			}
+
+			if allFailed {
+				return false
+			}
+		}
+	}
+
+	fmt.Printf("%+v\n", document.Const)
+	if document.Const != nil {
+		fmt.Println("const", data, *document.Const, reflect.DeepEqual(data, *document.Const))
+		if !reflect.DeepEqual(data, *document.Const) {
+			return false
+		}
+	}
+
 	if document.Type != nil {
 		if document.Type.IsSingle {
 			if !assertSimpleType(document.Type.Single, data) {
 				return false
 			}
 		} else {
+			// TODO: Early return.
 			allFailed := true
 			for _, simpleType := range document.Type.List {
 				if assertSimpleType(simpleType, data) {
