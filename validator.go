@@ -326,6 +326,19 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.AnyOf != nil {
+		allFailed := true
+		for _, s := range *document.AnyOf {
+			if v.isValid(data, s) {
+				allFailed = false
+			}
+		}
+
+		if allFailed {
+			return false
+		}
+	}
+
 	return true
 }
 
