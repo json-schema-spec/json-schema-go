@@ -339,6 +339,23 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.OneOf != nil {
+		hasMatched := false
+		for _, s := range *document.OneOf {
+			if v.isValid(data, s) {
+				if hasMatched {
+					return false
+				} else {
+					hasMatched = true
+				}
+			}
+		}
+
+		if !hasMatched {
+			return false
+		}
+	}
+
 	return true
 }
 
