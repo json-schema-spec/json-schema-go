@@ -251,6 +251,24 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 				}
 			}
 		}
+
+		if document.Dependencies != nil {
+			for key, dependency := range *document.Dependencies {
+				if _, ok := obj[key]; ok {
+					if dependency.IsSchema {
+						if !v.isValid(obj, dependency.Schema) {
+							return false
+						}
+					} else {
+						for _, k := range dependency.Strings {
+							if _, ok := obj[k]; !ok {
+								return false
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	if document.Const != nil {
