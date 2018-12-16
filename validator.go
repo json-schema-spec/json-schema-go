@@ -269,6 +269,14 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 				}
 			}
 		}
+
+		if document.PropertyNames != nil {
+			for key, _ := range obj {
+				if !v.isValid(key, *document.PropertyNames) {
+					return false
+				}
+			}
+		}
 	}
 
 	if document.Const != nil {
