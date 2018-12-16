@@ -1,7 +1,6 @@
 package jsonschema
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"regexp"
@@ -180,9 +179,7 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
-	fmt.Printf("%+v\n", document.Const)
 	if document.Const != nil {
-		fmt.Println("const", data, *document.Const, reflect.DeepEqual(data, *document.Const))
 		if !reflect.DeepEqual(data, *document.Const) {
 			return false
 		}
