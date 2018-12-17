@@ -368,6 +368,12 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 		}
 	}
 
+	if document.Not != nil {
+		if v.isValid(data, *document.Not) {
+			return false
+		}
+	}
+
 	return true
 }
 
