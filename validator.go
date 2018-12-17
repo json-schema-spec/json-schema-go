@@ -1,9 +1,13 @@
 package jsonschema
 
 import (
+	"encoding/json"
+	"fmt"
 	"math"
+	"net/url"
 	"reflect"
 	"regexp"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -11,14 +15,29 @@ import (
 const DefaultEpsilon float64 = 1e-3
 
 type Validator struct {
-	schema  Schema
-	Epsilon float64
+	rawSchema interface{}
+	schema    Schema
+	Epsilon   float64
 }
 
 func NewValidator(schema Schema) Validator {
+	// HACK: In order to support references, we'll convert the schema to JSON and
+	// convert it back. This is extremely inefficient.
+	data, err := json.Marshal(schema)
+	if err != nil {
+		panic(err)
+	}
+
+	var rawSchema interface{}
+	err = json.Unmarshal(data, &rawSchema)
+	if err != nil {
+		panic(err)
+	}
+
 	return Validator{
-		schema:  schema,
-		Epsilon: DefaultEpsilon,
+		rawSchema: rawSchema,
+		schema:    schema,
+		Epsilon:   DefaultEpsilon,
 	}
 }
 
@@ -32,6 +51,67 @@ func (v Validator) isValid(data interface{}, schema Schema) bool {
 	}
 
 	document := schema.Document
+
+	if document.Ref != nil {
+		ref, err := url.Parse(*document.Ref)
+		if err != nil {
+			// TODO: Validate inputted references in advance, and error on validator
+			// creation.
+			panic(err)
+		}
+
+		fmt.Println("ref", *document.Ref)
+
+		segments := strings.Split(ref.Fragment, "/")
+		fmt.Println("segments", segments)
+		referent := v.rawSchema
+		for _, segment := range segments {
+			if segment == "" {
+				continue
+			}
+
+			if obj, ok := referent.(map[string]interface{}); ok {
+				if val, ok := obj[segment]; ok {
+					referent = val
+				} else {
+					// Invalid reference -- no such property.
+					return false
+				}
+			} else {
+				// Invalid reference -- cannot deference properties of non-objects.
+				return false
+			}
+		}
+
+		fmt.Printf("Referent: %+v\n", referent)
+
+		// HACK: Again, convert to JSON and back to get a schema to validate
+		// against.
+		jsonData, err := json.Marshal(referent)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("referent serialized", string(jsonData))
+
+		var s Schema
+		err = json.Unmarshal(jsonData, &s)
+		if err != nil {
+			panic(err)
+		}
+
+		if !v.isValid(data, s) {
+			return false
+		}
+
+		// if referent, ok := v.rawSchema.(map[string]interface{}); !ok {
+		// 	return false
+		// } else {
+		// 	for _, segment := range segments {
+		// 		referent = segment
+		// 	}
+		// }
+	}
 
 	if document.Minimum != nil {
 		if num, ok := data.(float64); ok {

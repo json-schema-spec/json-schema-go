@@ -1,5 +1,9 @@
 package jsonschema
 
+import (
+	"encoding/json"
+)
+
 // Schema is a representation of a JSON Schema.
 type Schema struct {
 	IsTrivial    bool
@@ -74,6 +78,14 @@ type SchemaItems struct {
 	List     []Schema
 }
 
+func (i *SchemaItems) MarshalJSON() ([]byte, error) {
+	if i.IsSingle {
+		return json.Marshal(i.Single)
+	} else {
+		return json.Marshal(i.List)
+	}
+}
+
 func (i *SchemaItems) UnmarshalJSON(data []byte) error {
 	var single Schema
 	var list []Schema
@@ -96,6 +108,14 @@ type SchemaDependency struct {
 	Strings  []string
 }
 
+func (d *SchemaDependency) MarshalJSON() ([]byte, error) {
+	if d.IsSchema {
+		return json.Marshal(d.Schema)
+	} else {
+		return json.Marshal(d.Strings)
+	}
+}
+
 func (d *SchemaDependency) UnmarshalJSON(data []byte) error {
 	var schema Schema
 	var strings []string
@@ -116,6 +136,14 @@ type SchemaType struct {
 	IsSingle bool
 	Single   SimpleType
 	List     []SimpleType
+}
+
+func (t *SchemaType) MarshalJSON() ([]byte, error) {
+	if t.IsSingle {
+		return json.Marshal(t.Single)
+	} else {
+		return json.Marshal(t.List)
+	}
 }
 
 func (t *SchemaType) UnmarshalJSON(data []byte) error {
@@ -144,6 +172,14 @@ const (
 	ObjectSimpleType             = "object"
 	StringSimpleType             = "string"
 )
+
+func (s *Schema) MarshalJSON() ([]byte, error) {
+	if s.IsTrivial {
+		return json.Marshal(s.TrivialValue)
+	} else {
+		return json.Marshal(s.Document)
+	}
+}
 
 // UnmarshalJSON implements unmarshalling a Schema from raw JSON bytes.
 //
