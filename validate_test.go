@@ -14,8 +14,8 @@ import (
 const testDir = "tests"
 
 type testSuite struct {
-	Schema Schema     `json:"schema"`
-	Tests  []testCase `json:"tests"`
+	Schema interface{} `json:"schema"`
+	Tests  []testCase  `json:"tests"`
 }
 
 type testCase struct {
@@ -45,11 +45,14 @@ func TestValidate(t *testing.T) {
 		}
 
 		for i, suite := range suites {
-			validator := NewValidator(suite.Schema)
-
 			for j, test := range suite.Tests {
 				name := fmt.Sprintf("%s/%d/%d", path, i, j)
+
 				t.Run(name, func(t *testing.T) {
+					schema, err := NewSchema(suite.Schema)
+					assert.Nil(t, err)
+
+					validator := NewValidator(schema)
 					assert.Equal(t, test.Valid, validator.IsValid(test.Data))
 				})
 			}
