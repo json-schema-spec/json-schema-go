@@ -1,0 +1,457 @@
+[
+  {
+    "name": "type null",
+    "registry": [],
+    "schema": {
+      "type": "null"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "type boolean",
+    "registry": [],
+    "schema": {
+      "type": "boolean"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": true,
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "type number",
+    "registry": [],
+    "schema": {
+      "type": "number"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "type integer",
+    "registry": [],
+    "schema": {
+      "type": "integer"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "type string",
+    "registry": [],
+    "schema": {
+      "type": "string"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": "foo",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "type array",
+    "registry": [],
+    "schema": {
+      "type": "array"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "type object",
+    "registry": [],
+    "schema": {
+      "type": "object"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": []
+      }
+    ]
+  }
+]
