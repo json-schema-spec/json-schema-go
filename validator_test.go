@@ -42,7 +42,9 @@ func TestValidator(t *testing.T) {
 
 			for _, tt := range testCases {
 				t.Run(tt.Name, func(t *testing.T) {
-					validator := NewValidator(tt.Schema)
+					validator := NewValidator()
+					err := validator.Register(tt.Schema)
+					assert.Nil(t, err)
 
 					for _, instance := range tt.Instances {
 						result, err := validator.Validate(instance.Instance)

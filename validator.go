@@ -1,71 +1,56 @@
 package jsonschema
 
 import (
-	"math"
+	"net/url"
 
 	"github.com/ucarion/json-pointer"
 )
 
+// Validator compiles schemas and evaluates instances.
 type Validator struct {
-	schema Schema
+	registry map[url.URL]Schema
 }
 
+// ValidationResult contains information on whether an instance successfully
+// validated, as well as any relevant validation errors.
 type ValidationResult struct {
 	Errors []ValidationError
 }
 
+// ValidationError is a single error during validation.
 type ValidationError struct {
+	// A JSON Pointer to the part of the instance which was rejected.
 	InstancePath jsonpointer.Ptr
-	SchemaPath   jsonpointer.Ptr
+
+	// A JSON Pointer to the part of the schema which rejected part of the
+	// instance.
+	SchemaPath jsonpointer.Ptr
 }
 
-func NewValidator(s Schema) Validator {
-	return Validator{schema: s}
+// NewValidator constructs a new, empty Validator.
+func NewValidator() Validator {
+	return Validator{registry: map[url.URL]Schema{}}
 }
 
-func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
-	result := ValidationResult{
-		Errors: []ValidationError{},
-	}
+// Register compiles a Schema and adds it to the Validator's registry. Once
+// registered, schemas can validate instances or be referred to by other
+// schemas.
+//
+// If the registered schema lacks an "$id" keyword, then that schema will be
+// considered the "default" schema.
+func (v Validator) Register(s Schema) error {
+	v.registry[url.URL{}] = s
+	return nil
+}
 
-	typeErr := ValidationError{
-		InstancePath: jsonpointer.Ptr{Tokens: []string{}},
-		SchemaPath:   jsonpointer.Ptr{Tokens: []string{"type"}},
-	}
+// Validate validates an instance against the default schema of a Validator.
+func (v Validator) Validate(instance interface{}) (ValidationResult, error) {
+	return ValidationResult{}, nil
+	// schema, ok := v.registry[url.URL{}]
+	// if !ok {
+	// 	// TODO add error handling
+	// 	panic("no default schema")
+	// }
 
-	switch val := instance.(type) {
-	case nil:
-		if v.schema.Type != "null" {
-			result.Errors = append(result.Errors, typeErr)
-		}
-	case bool:
-		if v.schema.Type != "boolean" {
-			result.Errors = append(result.Errors, typeErr)
-		}
-	case float64:
-		if v.schema.Type == "integer" {
-			if val != math.Trunc(val) {
-				result.Errors = append(result.Errors, typeErr)
-			}
-		} else if v.schema.Type != "number" {
-			result.Errors = append(result.Errors, typeErr)
-		}
-	case string:
-		if v.schema.Type != "string" {
-			result.Errors = append(result.Errors, typeErr)
-		}
-	case []interface{}:
-		if v.schema.Type != "array" {
-			result.Errors = append(result.Errors, typeErr)
-		}
-	case map[string]interface{}:
-		if v.schema.Type != "object" {
-			result.Errors = append(result.Errors, typeErr)
-		}
-	default:
-		// todo errors
-		panic("bad type")
-	}
-
-	return result, nil
+	// switch
 }

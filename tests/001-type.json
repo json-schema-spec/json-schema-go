@@ -453,5 +453,61 @@
         "errors": []
       }
     ]
+  },
+  {
+    "name": "type null integer or array",
+    "registry": [],
+    "schema": {
+      "type": [
+        "null",
+        "integer",
+        "array"
+      ]
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      }
+    ]
   }
 ]
