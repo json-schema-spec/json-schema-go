@@ -109,10 +109,20 @@ func (vm *vm) execSchema(schema Schema, instance interface{}) error {
 			if schema.Items.IsSingle {
 				vm.pushSchemaToken("items")
 				for i, elem := range val {
-					fmt.Println("evaluating against elem", i)
 					vm.pushInstanceToken(strconv.FormatInt(int64(i), 10))
 					vm.execSchema(schema.Items.Single, elem)
 					vm.popInstanceToken()
+				}
+				vm.popSchemaToken()
+			} else {
+				vm.pushSchemaToken("items")
+				for i := 0; i < len(schema.Items.List) && i < len(val); i++ {
+					token := strconv.FormatInt(int64(i), 10)
+					vm.pushInstanceToken(token)
+					vm.pushSchemaToken(token)
+					vm.execSchema(schema.Items.List[i], val[i])
+					vm.popInstanceToken()
+					vm.popSchemaToken()
 				}
 				vm.popSchemaToken()
 			}
