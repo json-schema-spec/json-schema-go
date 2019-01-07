@@ -1,7 +1,10 @@
 package jsonschema
 
+// Schema is a JSON Schema schema. Instances of Schema can be unmarshalled from
+// JSON.
 type Schema struct {
-	Type SchemaType `json:"type"`
+	Type  *SchemaType  `json:"type"`
+	Items *SchemaItems `json:"items"`
 }
 
 // SchemaType is either one JSONType or a nonempty list of JSONType.
@@ -28,6 +31,28 @@ func (t *SchemaType) contains(typ JSONType) bool {
 func (t *SchemaType) UnmarshalJSON(data []byte) error {
 	var single JSONType
 	var list []JSONType
+
+	isSingle, err := unmarshalWithFallback(data, &single, &list)
+	if err != nil {
+		return err
+	}
+
+	t.IsSingle = isSingle
+	t.Single = single
+	t.List = list
+	return nil
+}
+
+// SchemaItems is either one Schema or a nonempty list of Schemas.
+type SchemaItems struct {
+	IsSingle bool
+	Single   Schema
+	List     []Schema
+}
+
+func (t *SchemaItems) UnmarshalJSON(data []byte) error {
+	var single Schema
+	var list []Schema
 
 	isSingle, err := unmarshalWithFallback(data, &single, &list)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/url"
+	"strconv"
 
 	"github.com/ucarion/json-pointer"
 )
@@ -67,50 +68,64 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 func (vm *vm) execSchema(schema Schema, instance interface{}) error {
 	switch val := instance.(type) {
 	case nil:
-		if !schema.Type.contains(JSONTypeNull) {
+		if schema.Type != nil && !schema.Type.contains(JSONTypeNull) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	case bool:
-		if !schema.Type.contains(JSONTypeBoolean) {
+		if schema.Type != nil && !schema.Type.contains(JSONTypeBoolean) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	case float64:
-		typeOk := false
-		if schema.Type.contains(JSONTypeInteger) {
-			typeOk = val == math.Round(val)
-		}
+		if schema.Type != nil {
+			typeOk := false
+			if schema.Type.contains(JSONTypeInteger) {
+				typeOk = val == math.Round(val)
+			}
 
-		if !typeOk && !schema.Type.contains(JSONTypeNumber) {
-			vm.pushSchemaToken("type")
-			vm.reportError()
-			vm.popSchemaToken()
+			if !typeOk && !schema.Type.contains(JSONTypeNumber) {
+				vm.pushSchemaToken("type")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
 		}
 	case string:
-		if !schema.Type.contains(JSONTypeString) {
+		if schema.Type != nil && !schema.Type.contains(JSONTypeString) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	case []interface{}:
-		if !schema.Type.contains(JSONTypeArray) {
+		if schema.Type != nil && !schema.Type.contains(JSONTypeArray) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
+
+		if schema.Items != nil {
+			if schema.Items.IsSingle {
+				vm.pushSchemaToken("items")
+				for i, elem := range val {
+					fmt.Println("evaluating against elem", i)
+					vm.pushInstanceToken(strconv.FormatInt(int64(i), 10))
+					vm.execSchema(schema.Items.Single, elem)
+					vm.popInstanceToken()
+				}
+				vm.popSchemaToken()
+			}
+		}
 	case map[string]interface{}:
-		if !schema.Type.contains(JSONTypeObject) {
+		if schema.Type != nil && !schema.Type.contains(JSONTypeObject) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	default:
-		vm.pushSchemaToken("type")
-		vm.reportError()
-		vm.popSchemaToken()
+		// TODO a better error here
+		panic("unexpected non-json input")
 	}
 
 	return nil
@@ -129,8 +144,16 @@ func (vm *vm) pushSchemaToken(token string) {
 }
 
 func (vm *vm) popSchemaToken() {
-	s := vm.stack.schemas[len(vm.stack.schemas)-1]
+	s := &vm.stack.schemas[len(vm.stack.schemas)-1]
 	s.tokens = s.tokens[:len(s.tokens)-1]
+}
+
+func (vm *vm) pushInstanceToken(token string) {
+	vm.stack.instance = append(vm.stack.instance, token)
+}
+
+func (vm *vm) popInstanceToken() {
+	vm.stack.instance = vm.stack.instance[:len(vm.stack.instance)-1]
 }
 
 func (vm *vm) reportError() {

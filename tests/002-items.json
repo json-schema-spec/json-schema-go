@@ -1,0 +1,83 @@
+[
+  {
+    "name": "evaluates schema against all elements of array",
+    "registry": [],
+    "schema": {
+      "items": {
+        "type": "integer"
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": []
+      },
+      {
+        "instance": 3,
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": [
+          1,
+          2,
+          3
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          1,
+          2.1,
+          3
+        ],
+        "errors": [
+          {
+            "instancePath": "/1",
+            "schemaPath": "/items/type"
+          }
+        ]
+      },
+      {
+        "instance": [
+          1.1,
+          2.1,
+          3.1
+        ],
+        "errors": [
+          {
+            "instancePath": "/0",
+            "schemaPath": "/items/type"
+          },
+          {
+            "instancePath": "/1",
+            "schemaPath": "/items/type"
+          },
+          {
+            "instancePath": "/2",
+            "schemaPath": "/items/type"
+          }
+        ]
+      }
+    ]
+  }
+]
