@@ -506,7 +506,12 @@
       },
       {
         "instance": {},
-        "errors": []
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type"
+          }
+        ]
       }
     ]
   }

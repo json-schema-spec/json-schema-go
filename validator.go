@@ -25,6 +25,9 @@ type ValidationError struct {
 	// A JSON Pointer to the part of the schema which rejected part of the
 	// instance.
 	SchemaPath jsonpointer.Ptr
+
+	// The URI of the schema which rejected part of the instance.
+	URI url.URL
 }
 
 // NewValidator constructs a new, empty Validator.
@@ -45,12 +48,23 @@ func (v Validator) Register(s Schema) error {
 
 // Validate validates an instance against the default schema of a Validator.
 func (v Validator) Validate(instance interface{}) (ValidationResult, error) {
-	return ValidationResult{}, nil
-	// schema, ok := v.registry[url.URL{}]
-	// if !ok {
-	// 	// TODO add error handling
-	// 	panic("no default schema")
-	// }
+	id := url.URL{}
 
-	// switch
+	vm := vm{
+		registry: v.registry,
+		stack: stack{
+			instance: []string{},
+			schemas:  []schemaStack{},
+		},
+		errors: []ValidationError{},
+	}
+
+	err := vm.exec(id, instance)
+	if err != nil {
+		return ValidationResult{}, err
+	}
+
+	return ValidationResult{
+		Errors: vm.errors,
+	}, nil
 }

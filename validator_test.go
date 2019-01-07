@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -46,10 +47,12 @@ func TestValidator(t *testing.T) {
 					err := validator.Register(tt.Schema)
 					assert.Nil(t, err)
 
-					for _, instance := range tt.Instances {
-						result, err := validator.Validate(instance.Instance)
-						assert.Nil(t, err)
-						assert.Equal(t, instance.Errors, result.Errors)
+					for i, instance := range tt.Instances {
+						t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+							result, err := validator.Validate(instance.Instance)
+							assert.Nil(t, err)
+							assert.Equal(t, instance.Errors, result.Errors)
+						})
 					}
 				})
 			}

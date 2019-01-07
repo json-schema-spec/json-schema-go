@@ -11,6 +11,20 @@ type SchemaType struct {
 	List     []JSONType
 }
 
+func (t *SchemaType) contains(typ JSONType) bool {
+	if t.IsSingle {
+		return t.Single == typ
+	}
+
+	for _, elem := range t.List {
+		if elem == typ {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (t *SchemaType) UnmarshalJSON(data []byte) error {
 	var single JSONType
 	var list []JSONType
