@@ -235,5 +235,54 @@
         "errors": []
       }
     ]
+  },
+  {
+    "name": "composition",
+    "registry": [],
+    "schema": {
+      "items": [
+        {
+          "items": {
+            "type": "null"
+          }
+        },
+        {
+          "items": [
+            {
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "items": {
+                "type": "array"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "instances": [
+      {
+        "instance": [
+          null,
+          [
+            [
+              "foo",
+              []
+            ],
+            [
+              "foo",
+              []
+            ],
+            [
+              "foo",
+              []
+            ]
+          ]
+        ],
+        "errors": []
+      }
+    ]
   }
 ]
