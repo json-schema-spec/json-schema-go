@@ -265,18 +265,18 @@
     "instances": [
       {
         "instance": [
-          null,
+          [
+            null,
+            null,
+            null
+          ],
           [
             [
-              "foo",
-              []
+              "",
+              ""
             ],
             [
-              "foo",
-              []
-            ],
-            [
-              "foo",
+              [],
               []
             ]
           ]
