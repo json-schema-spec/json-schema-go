@@ -3,8 +3,10 @@ package jsonschema
 // Schema is a JSON Schema schema. Instances of Schema can be unmarshalled from
 // JSON.
 type Schema struct {
-	Type  *SchemaType  `json:"type"`
-	Items *SchemaItems `json:"items"`
+	Type      *SchemaType  `json:"type"`
+	Items     *SchemaItems `json:"items"`
+	Ref       *string      `json:"$ref" mapstructure:"$ref"`
+	refSchema *Schema
 }
 
 // SchemaType is either one JSONType or a nonempty list of JSONType.

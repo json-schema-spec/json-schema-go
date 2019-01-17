@@ -1,0 +1,29 @@
+[
+  {
+    "name": "reference to arbitrary part of the same schema",
+    "registry": [],
+    "schema": {
+      "foobar": {
+        "baz": {
+          "type": "null"
+        }
+      },
+      "$ref": "#/foobar/baz"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/foobar/baz/type"
+          }
+        ]
+      }
+    ]
+  }
+]

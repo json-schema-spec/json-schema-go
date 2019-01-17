@@ -11,7 +11,7 @@ import (
 
 type vm struct {
 	// registry is a set of Schemas, indexed by their IDs
-	registry map[url.URL]Schema
+	registry map[url.URL]*Schema
 
 	// stack holds state used for error-message generation
 	stack stack
@@ -62,10 +62,18 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 	}
 
 	vm.pushNewSchema(absoluteURI, fragPtr.Tokens)
-	return vm.execSchema(schema, instance)
+	return vm.execSchema(*schema, instance)
 }
 
 func (vm *vm) execSchema(schema Schema, instance interface{}) error {
+	if schema.refSchema != nil {
+		// todo I need a URI and set of tokens here
+		schemaTokens := []string{"foobar", "baz"}
+		vm.pushNewSchema(url.URL{}, schemaTokens)
+		vm.execSchema(*schema.refSchema, instance)
+		vm.popSchema()
+	}
+
 	switch val := instance.(type) {
 	case nil:
 		if schema.Type != nil && !schema.Type.contains(JSONTypeNull) {
@@ -146,6 +154,10 @@ func (vm *vm) pushNewSchema(id url.URL, tokens []string) {
 		id:     id,
 		tokens: tokens,
 	})
+}
+
+func (vm *vm) popSchema() {
+	vm.stack.schemas = vm.stack.schemas[:len(vm.stack.schemas)-1]
 }
 
 func (vm *vm) pushSchemaToken(token string) {

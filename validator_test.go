@@ -12,10 +12,10 @@ import (
 )
 
 type testCase struct {
-	Name      string         `json:"name"`
-	Registry  []Schema       `json:"registry"`
-	Schema    Schema         `json:"schema"`
-	Instances []instanceCase `json:"instances"`
+	Name      string                   `json:"name"`
+	Registry  []map[string]interface{} `json:"registry"`
+	Schema    map[string]interface{}   `json:"schema"`
+	Instances []instanceCase           `json:"instances"`
 }
 
 type instanceCase struct {
@@ -44,7 +44,13 @@ func TestValidator(t *testing.T) {
 			for _, tt := range testCases {
 				t.Run(tt.Name, func(t *testing.T) {
 					validator := NewValidator()
-					err := validator.Register(tt.Schema)
+					for _, schema := range tt.Registry {
+						validator.Register(schema)
+					}
+
+					validator.Register(tt.Schema)
+
+					err := validator.Seal()
 					assert.Nil(t, err)
 
 					for i, instance := range tt.Instances {
