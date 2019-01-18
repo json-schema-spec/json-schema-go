@@ -117,5 +117,39 @@
         ]
       }
     ]
+  },
+  {
+    "name": "recursive schema",
+    "registry": [],
+    "schema": {
+      "items": {
+        "$ref": "#"
+      },
+      "type": "array"
+    },
+    "instances": [
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": [[], "a"],
+        "errors": [
+          {
+            "instancePath": "/1",
+            "schemaPath": "/type"
+          }
+        ]
+      },
+      {
+        "instance": [[], [[]], [[[], ["a"]]]],
+        "errors": [
+          {
+            "instancePath": "/2/0/1/0",
+            "schemaPath": "/type"
+          }
+        ]
+      }
+    ]
   }
 ]

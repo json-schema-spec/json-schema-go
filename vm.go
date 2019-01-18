@@ -46,6 +46,11 @@ type schemaStack struct {
 }
 
 func (vm *vm) exec(uri url.URL, instance interface{}) error {
+	for k, v := range vm.registry {
+		fmt.Printf("%#v :: %#v\n", k.String(), v)
+	}
+	fmt.Println("---")
+
 	schema, ok := vm.registry[uri]
 	if !ok {
 		// TODO custom error types
@@ -63,9 +68,10 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 }
 
 func (vm *vm) execSchema(schema schema, instance interface{}) error {
-	fmt.Printf("%#v\n", schema)
-
 	if schema.Ref.IsSet {
+		fmt.Println("schema ref is set")
+		fmt.Printf("%#v\n", schema.Ref)
+
 		schemaTokens := make([]string, len(schema.Ref.Ptr.Tokens))
 		copy(schemaTokens, schema.Ref.Ptr.Tokens)
 

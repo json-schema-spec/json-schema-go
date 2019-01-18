@@ -69,17 +69,20 @@ func TestValidator(t *testing.T) {
 							result, err := validator.Validate(instance.Instance)
 							assert.Nil(t, err)
 
-							assert.Equal(t, len(instance.Errors), len(result.Errors))
-							for i := 0; i < len(instance.Errors) && i < len(result.Errors); i++ {
-								expected := instance.Errors[i]
-								instancePath, _ := jsonpointer.New(expected.InstancePath)
-								schemaPath, _ := jsonpointer.New(expected.SchemaPath)
-								uri, _ := url.Parse(expected.URI)
+							expected := make([]ValidationError, len(instance.Errors))
+							for i, e := range instance.Errors {
+								instancePath, _ := jsonpointer.New(e.InstancePath)
+								schemaPath, _ := jsonpointer.New(e.SchemaPath)
+								uri, _ := url.Parse(e.URI)
 
-								assert.Equal(t, instancePath, result.Errors[i].InstancePath)
-								assert.Equal(t, schemaPath, result.Errors[i].SchemaPath)
-								assert.Equal(t, *uri, result.Errors[i].URI)
+								expected[i] = ValidationError{
+									InstancePath: instancePath,
+									SchemaPath:   schemaPath,
+									URI:          *uri,
+								}
 							}
+
+							assert.Equal(t, expected, result.Errors)
 						})
 					}
 				})
