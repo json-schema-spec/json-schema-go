@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/pkg/errors"
+	"github.com/segmentio/errors-go"
 	"github.com/ucarion/json-pointer"
 )
 
