@@ -3,9 +3,8 @@ package jsonschema
 import (
 	"net/url"
 
-	"github.com/ucarion/json-pointer"
-
 	"github.com/segmentio/errors-go"
+	"github.com/ucarion/json-pointer"
 )
 
 type schema struct {
