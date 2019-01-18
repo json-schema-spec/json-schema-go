@@ -151,5 +151,50 @@
         ]
       }
     ]
+  },
+  {
+    "name": "mutually recursive schemas",
+    "registry": [
+      {
+        "$id": "urn:example:foo",
+        "items": {
+          "$ref": "urn:example:bar"
+        }
+      },
+      {
+        "$id": "urn:example:bar",
+        "$ref": "urn:example:foo",
+        "type": "array"
+      }
+    ],
+    "schema": {
+      "$ref": "urn:example:bar"
+    },
+    "instances": [
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": [[], "a"],
+        "errors": [
+          {
+            "instancePath": "/1",
+            "schemaPath": "/type",
+            "uri": "urn:example:bar"
+          }
+        ]
+      },
+      {
+        "instance": [[], [[]], [[[], ["a"]]]],
+        "errors": [
+          {
+            "instancePath": "/2/0/1/0",
+            "schemaPath": "/type",
+            "uri": "urn:example:bar"
+          }
+        ]
+      }
+    ]
   }
 ]
