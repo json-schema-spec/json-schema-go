@@ -51,9 +51,8 @@ func (v *Validator) Register(schema map[string]interface{}) error {
 		return err
 	}
 
-	uri := url.URL{} // todo get this from the parsed schema
-	v.schemas[uri] = schema
-	v.registry[uri] = &parsed
+	v.schemas[parsed.ID] = schema
+	v.registry[parsed.ID] = &parsed
 
 	return nil
 }
@@ -76,9 +75,7 @@ func (v *Validator) populateRefs(uri url.URL) error {
 	schema := v.registry[uri]
 
 	if schema.Ref.IsSet && schema.Ref.Schema == nil {
-		refBaseURI := schema.Ref.URI
-		refBaseURI.Fragment = ""
-		refSchemaBaseValue, ok := v.schemas[refBaseURI]
+		refSchemaBaseValue, ok := v.schemas[schema.Ref.BaseURI]
 		if !ok {
 			return errors.New("no schema with URI") // todo error type
 		}

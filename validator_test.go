@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/ucarion/json-pointer"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -19,8 +22,14 @@ type testCase struct {
 }
 
 type instanceCase struct {
-	Instance interface{}       `json:"instance"`
-	Errors   []ValidationError `json:"errors"`
+	Instance interface{}     `json:"instance"`
+	Errors   []instanceError `json:"errors"`
+}
+
+type instanceError struct {
+	InstancePath string `json:"instancePath"`
+	SchemaPath   string `json:"schemaPath"`
+	URI          string `json:"uri"`
 }
 
 func TestValidator(t *testing.T) {
@@ -45,19 +54,32 @@ func TestValidator(t *testing.T) {
 				t.Run(tt.Name, func(t *testing.T) {
 					validator := NewValidator()
 					for _, schema := range tt.Registry {
-						validator.Register(schema)
+						err := validator.Register(schema)
+						assert.Nil(t, err)
 					}
 
-					validator.Register(tt.Schema)
+					err := validator.Register(tt.Schema)
+					assert.Nil(t, err)
 
-					err := validator.Seal()
+					err = validator.Seal()
 					assert.Nil(t, err)
 
 					for i, instance := range tt.Instances {
 						t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 							result, err := validator.Validate(instance.Instance)
 							assert.Nil(t, err)
-							assert.Equal(t, instance.Errors, result.Errors)
+
+							assert.Equal(t, len(instance.Errors), len(result.Errors))
+							for i := 0; i < len(instance.Errors) && i < len(result.Errors); i++ {
+								expected := instance.Errors[i]
+								instancePath, _ := jsonpointer.New(expected.InstancePath)
+								schemaPath, _ := jsonpointer.New(expected.SchemaPath)
+								uri, _ := url.Parse(expected.URI)
+
+								assert.Equal(t, instancePath, result.Errors[i].InstancePath)
+								assert.Equal(t, schemaPath, result.Errors[i].SchemaPath)
+								assert.Equal(t, *uri, result.Errors[i].URI)
+							}
 						})
 					}
 				})

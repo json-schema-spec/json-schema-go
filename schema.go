@@ -8,6 +8,7 @@ import (
 )
 
 type schema struct {
+	ID    url.URL
 	Ref   schemaRef
 	Type  schemaType
 	Items schemaItems
@@ -48,10 +49,11 @@ type schemaItems struct {
 }
 
 type schemaRef struct {
-	IsSet  bool
-	Schema *schema
-	URI    url.URL
-	Ptr    jsonpointer.Ptr
+	IsSet   bool
+	Schema  *schema
+	URI     url.URL
+	BaseURI url.URL
+	Ptr     jsonpointer.Ptr
 }
 
 func parseSchema(val interface{}) (schema, error) {
@@ -60,6 +62,20 @@ func parseSchema(val interface{}) (schema, error) {
 	value, ok := val.(map[string]interface{})
 	if !ok {
 		return s, errors.New("schemas must be map[string]interface{}")
+	}
+
+	if id, ok := value["$id"]; ok {
+		idStr, ok := id.(string)
+		if !ok {
+			return s, errors.New("$id values must be a string")
+		}
+
+		uri, err := url.Parse(idStr)
+		if err != nil {
+			return s, errors.New("$id is not valid URI")
+		}
+
+		s.ID = *uri
 	}
 
 	if ref, ok := value["$ref"]; ok {
@@ -73,6 +89,9 @@ func parseSchema(val interface{}) (schema, error) {
 			return s, errors.New("$ref is not valid URI")
 		}
 
+		baseURI := *uri
+		baseURI.Fragment = ""
+
 		ptr, err := jsonpointer.New(uri.Fragment)
 		if err != nil {
 			return s, errors.New("$ref fragment is not a valid JSON Pointer")
@@ -80,6 +99,7 @@ func parseSchema(val interface{}) (schema, error) {
 
 		s.Ref.IsSet = true
 		s.Ref.URI = *uri
+		s.Ref.BaseURI = baseURI
 		s.Ref.Ptr = ptr
 	}
 

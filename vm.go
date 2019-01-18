@@ -46,13 +46,10 @@ type schemaStack struct {
 }
 
 func (vm *vm) exec(uri url.URL, instance interface{}) error {
-	absoluteURI := uri
-	absoluteURI.Fragment = ""
-
-	schema, ok := vm.registry[absoluteURI]
+	schema, ok := vm.registry[uri]
 	if !ok {
 		// TODO custom error types
-		return fmt.Errorf("no schema with uri: %#v", absoluteURI)
+		return fmt.Errorf("no schema with uri: %#v", uri)
 	}
 
 	fragPtr, err := jsonpointer.New(uri.Fragment)
@@ -61,7 +58,7 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 		return err
 	}
 
-	vm.pushNewSchema(absoluteURI, fragPtr.Tokens)
+	vm.pushNewSchema(uri, fragPtr.Tokens)
 	return vm.execSchema(*schema, instance)
 }
 
@@ -72,7 +69,7 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		schemaTokens := make([]string, len(schema.Ref.Ptr.Tokens))
 		copy(schemaTokens, schema.Ref.Ptr.Tokens)
 
-		vm.pushNewSchema(url.URL{}, schemaTokens)
+		vm.pushNewSchema(schema.Ref.BaseURI, schemaTokens)
 		vm.execSchema(*schema.Ref.Schema, instance)
 		vm.popSchema()
 	}
