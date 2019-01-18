@@ -25,5 +25,37 @@
         ]
       }
     ]
+  },
+  {
+    "name": "nested references in same schema",
+    "registry": [],
+    "schema": {
+      "foobar": {
+        "baz": {
+          "$ref": "#/foobar2/baz"
+        }
+      },
+      "foobar2": {
+        "baz": {
+          "type": "null"
+        }
+      },
+      "$ref": "#/foobar/baz"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/foobar2/baz/type"
+          }
+        ]
+      }
+    ]
   }
 ]

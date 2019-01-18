@@ -3,6 +3,8 @@ package jsonschema
 import (
 	"net/url"
 
+	"github.com/ucarion/json-pointer"
+
 	"github.com/segmentio/errors-go"
 )
 
@@ -50,6 +52,7 @@ type schemaRef struct {
 	IsSet  bool
 	Schema *schema
 	URI    url.URL
+	Ptr    jsonpointer.Ptr
 }
 
 func parseSchema(val interface{}) (schema, error) {
@@ -71,8 +74,14 @@ func parseSchema(val interface{}) (schema, error) {
 			return s, errors.New("$ref is not valid URI")
 		}
 
+		ptr, err := jsonpointer.New(uri.Fragment)
+		if err != nil {
+			return s, errors.New("$ref fragment is not a valid JSON Pointer")
+		}
+
 		s.Ref.IsSet = true
 		s.Ref.URI = *uri
+		s.Ref.Ptr = ptr
 	}
 
 	switch typ := value["type"].(type) {

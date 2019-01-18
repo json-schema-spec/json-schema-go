@@ -1,7 +1,6 @@
 package jsonschema
 
 import (
-	"fmt"
 	"net/url"
 
 	"github.com/segmentio/errors-go"
@@ -77,11 +76,6 @@ func (v *Validator) populateRefs(uri url.URL) error {
 	schema := v.registry[uri]
 
 	if schema.Ref.IsSet && schema.Ref.Schema == nil {
-		ptr, err := jsonpointer.New(schema.Ref.URI.Fragment)
-		if err != nil {
-			return errors.Wrap(err, "error parsing URI fragment as JSON Pointer")
-		}
-
 		refBaseURI := schema.Ref.URI
 		refBaseURI.Fragment = ""
 		refSchemaBaseValue, ok := v.schemas[refBaseURI]
@@ -89,15 +83,13 @@ func (v *Validator) populateRefs(uri url.URL) error {
 			return errors.New("no schema with URI") // todo error type
 		}
 
-		refSchemaValue, err := ptr.Eval(refSchemaBaseValue)
+		refSchemaValue, err := schema.Ref.Ptr.Eval(refSchemaBaseValue)
 		if err != nil {
-			fmt.Printf("%#v\n%#v\n%#v\n", refSchemaBaseValue, ptr, err)
 			return errors.Wrap(err, "error evaluating $ref JSON Pointer")
 		}
 
 		refSchema, err := parseSchema(*refSchemaValue)
 		if err != nil {
-			fmt.Printf("%#v\n", *refSchemaValue)
 			return errors.Wrap(err, "$ref points to non-schema value")
 		}
 

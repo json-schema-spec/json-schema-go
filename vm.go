@@ -69,8 +69,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	fmt.Printf("%#v\n", schema)
 
 	if schema.Ref.IsSet {
-		// todo I need a URI and set of tokens here
-		schemaTokens := []string{"foobar", "baz"}
+		schemaTokens := make([]string, len(schema.Ref.Ptr.Tokens))
+		copy(schemaTokens, schema.Ref.Ptr.Tokens)
+
 		vm.pushNewSchema(url.URL{}, schemaTokens)
 		vm.execSchema(*schema.Ref.Schema, instance)
 		vm.popSchema()
