@@ -85,5 +85,37 @@
         ]
       }
     ]
+  },
+  {
+    "name": "nested references to other schemas",
+    "registry": [
+      {
+        "$id": "urn:example:foo",
+        "$ref": "urn:example:bar"
+      },
+      {
+        "$id": "urn:example:bar",
+        "type": "null"
+      }
+    ],
+    "schema": {
+      "$ref": "urn:example:foo"
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/type",
+            "uri": "urn:example:bar"
+          }
+        ]
+      }
+    ]
   }
 ]
