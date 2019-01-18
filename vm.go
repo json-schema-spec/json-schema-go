@@ -11,7 +11,7 @@ import (
 
 type vm struct {
 	// registry is a set of Schemas, indexed by their IDs
-	registry map[url.URL]*Schema
+	registry map[url.URL]*schema
 
 	// stack holds state used for error-message generation
 	stack stack
@@ -65,70 +65,72 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 	return vm.execSchema(*schema, instance)
 }
 
-func (vm *vm) execSchema(schema Schema, instance interface{}) error {
-	if schema.refSchema != nil {
+func (vm *vm) execSchema(schema schema, instance interface{}) error {
+	fmt.Printf("%#v\n", schema)
+
+	if schema.Ref.IsSet {
 		// todo I need a URI and set of tokens here
 		schemaTokens := []string{"foobar", "baz"}
 		vm.pushNewSchema(url.URL{}, schemaTokens)
-		vm.execSchema(*schema.refSchema, instance)
+		vm.execSchema(*schema.Ref.Schema, instance)
 		vm.popSchema()
 	}
 
 	switch val := instance.(type) {
 	case nil:
-		if schema.Type != nil && !schema.Type.contains(JSONTypeNull) {
+		if schema.Type.IsSet && !schema.Type.contains(jsonTypeNull) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	case bool:
-		if schema.Type != nil && !schema.Type.contains(JSONTypeBoolean) {
+		if schema.Type.IsSet && !schema.Type.contains(jsonTypeBoolean) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	case float64:
-		if schema.Type != nil {
+		if schema.Type.IsSet {
 			typeOk := false
-			if schema.Type.contains(JSONTypeInteger) {
+			if schema.Type.contains(jsonTypeInteger) {
 				typeOk = val == math.Round(val)
 			}
 
-			if !typeOk && !schema.Type.contains(JSONTypeNumber) {
+			if !typeOk && !schema.Type.contains(jsonTypeNumber) {
 				vm.pushSchemaToken("type")
 				vm.reportError()
 				vm.popSchemaToken()
 			}
 		}
 	case string:
-		if schema.Type != nil && !schema.Type.contains(JSONTypeString) {
+		if schema.Type.IsSet && !schema.Type.contains(jsonTypeString) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 	case []interface{}:
-		if schema.Type != nil && !schema.Type.contains(JSONTypeArray) {
+		if schema.Type.IsSet && !schema.Type.contains(jsonTypeArray) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()
 		}
 
-		if schema.Items != nil {
+		if schema.Items.IsSet {
 			if schema.Items.IsSingle {
 				vm.pushSchemaToken("items")
 				for i, elem := range val {
 					vm.pushInstanceToken(strconv.FormatInt(int64(i), 10))
-					vm.execSchema(schema.Items.Single, elem)
+					vm.execSchema(schema.Items.Schemas[0], elem)
 					vm.popInstanceToken()
 				}
 				vm.popSchemaToken()
 			} else {
 				vm.pushSchemaToken("items")
-				for i := 0; i < len(schema.Items.List) && i < len(val); i++ {
+				for i := 0; i < len(schema.Items.Schemas) && i < len(val); i++ {
 					token := strconv.FormatInt(int64(i), 10)
 					vm.pushInstanceToken(token)
 					vm.pushSchemaToken(token)
-					vm.execSchema(schema.Items.List[i], val[i])
+					vm.execSchema(schema.Items.Schemas[i], val[i])
 					vm.popInstanceToken()
 					vm.popSchemaToken()
 				}
@@ -136,7 +138,7 @@ func (vm *vm) execSchema(schema Schema, instance interface{}) error {
 			}
 		}
 	case map[string]interface{}:
-		if schema.Type != nil && !schema.Type.contains(JSONTypeObject) {
+		if schema.Type.IsSet && !schema.Type.contains(jsonTypeObject) {
 			vm.pushSchemaToken("type")
 			vm.reportError()
 			vm.popSchemaToken()

@@ -3,53 +3,15 @@ package jsonschema
 import (
 	"fmt"
 	"net/url"
-	"reflect"
 
-	"github.com/mitchellh/mapstructure"
-	"github.com/segmentio/errors-go"
+	"github.com/pkg/errors"
 	"github.com/ucarion/json-pointer"
 )
 
 // Validator compiles schemas and evaluates instances.
 type Validator struct {
 	schemas  map[url.URL]map[string]interface{}
-	registry map[url.URL]*Schema
-}
-
-var decoderConfig = mapstructure.DecoderConfig{
-	DecodeHook: func(source, target reflect.Type, value interface{}) (interface{}, error) {
-		if target == reflect.TypeOf(SchemaType{}) {
-			switch val := value.(type) {
-			case string:
-				return map[string]interface{}{
-					"IsSingle": true,
-					"Single":   val,
-				}, nil
-			case []interface{}:
-				return map[string]interface{}{
-					"IsSingle": false,
-					"List":     val,
-				}, nil
-			}
-		}
-
-		if target == reflect.TypeOf(SchemaItems{}) {
-			switch val := value.(type) {
-			case map[string]interface{}:
-				return map[string]interface{}{
-					"IsSingle": true,
-					"Single":   val,
-				}, nil
-			case []interface{}:
-				return map[string]interface{}{
-					"IsSingle": false,
-					"List":     val,
-				}, nil
-			}
-		}
-
-		return value, nil
-	},
+	registry map[url.URL]*schema
 }
 
 // ValidationResult contains information on whether an instance successfully
@@ -75,7 +37,7 @@ type ValidationError struct {
 func NewValidator() Validator {
 	return Validator{
 		schemas:  map[url.URL]map[string]interface{}{},
-		registry: map[url.URL]*Schema{},
+		registry: map[url.URL]*schema{},
 	}
 }
 
@@ -111,34 +73,16 @@ func (v *Validator) Seal() error {
 	return nil
 }
 
-// whatever function is doing JSON Pointer derefs needs to have access to a
-// map[string]interface{} version of the schema
-
-// TODO not sure about this TODO lol
-//
-// TODO make seal take an interface{} and a baseURI pointer. Its job is to parse
-// the inputted schema, and assure its proper formatting.
-//
-// If the baseURI inputted is nil, then this is a top-level schema. The baseURI
-// should be taken from the inputted schema.
 func (v *Validator) populateRefs(uri url.URL) error {
 	schema := v.registry[uri]
 
-	if schema.Ref != nil {
-		refURI, err := uri.Parse(*schema.Ref)
-		if err != nil {
-			return errors.Wrap(err, "error parsing $ref")
-		}
-
-		// After this line, we have no need for the fragment part of the URI.
-		ptr, err := jsonpointer.New(refURI.Fragment)
+	if schema.Ref.IsSet && schema.Ref.Schema == nil {
+		ptr, err := jsonpointer.New(schema.Ref.URI.Fragment)
 		if err != nil {
 			return errors.Wrap(err, "error parsing URI fragment as JSON Pointer")
 		}
 
-		fmt.Printf("writing to: %#v\n", *refURI)
-
-		refBaseURI := *refURI
+		refBaseURI := schema.Ref.URI
 		refBaseURI.Fragment = ""
 		refSchemaBaseValue, ok := v.schemas[refBaseURI]
 		if !ok {
@@ -157,69 +101,16 @@ func (v *Validator) populateRefs(uri url.URL) error {
 			return errors.Wrap(err, "$ref points to non-schema value")
 		}
 
-		fmt.Printf("writing to: %#v\n", *refURI)
-
-		v.registry[*refURI] = &refSchema
-		err = v.populateRefs(*refURI)
+		v.registry[schema.Ref.URI] = &refSchema
+		err = v.populateRefs(schema.Ref.URI)
 		if err != nil {
 			return err
 		}
 
-		schema.refSchema = &refSchema
+		schema.Ref.Schema = &refSchema
 	}
 
 	return nil
-}
-
-// func (v *Validator) sealSchema(baseURI *url.URL, schema Schema) error {
-// 	if schema.Ref != nil {
-
-// 		// Check if the URI has already been added to the registry. If it has been,
-// 		// then there is nothing more to be done here.
-// 		if _, ok := v.registry[*uri]; ok {
-// 			return nil
-// 		}
-
-// 		ptr, err := jsonpointer.New(uri.Fragment)
-// 		if err != nil {
-// 			return errors.Wrap(err, "error parsing URI fragment as JSON Pointer")
-// 		}
-
-// 		deref, err := ptr.Eval(schema)
-// 		if err != nil {
-// 			return errors.Wrap(err, "error dereferencing JSON Pointer")
-// 		}
-
-// 		derefSchema, ok := (*deref).(map[string]interface{})
-// 		if !ok {
-// 			return errors.New("JSON Pointer points to a non-schema value")
-// 		}
-
-// 		// TODO I need a Schema parsed object here to put into the registry.
-// 		// Otherwise, the recursive call below may result in unbounded recursion.
-
-// 		err = v.seal(baseURI, derefSchema)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// }
-
-func parseSchema(value interface{}) (Schema, error) {
-	var s Schema
-	decoderConfig.Result = &s
-	decoder, err := mapstructure.NewDecoder(&decoderConfig)
-
-	if err != nil {
-		return s, errors.Wrap(err, "error creating decoder")
-	}
-
-	err = decoder.Decode(value)
-	if err != nil {
-		return s, errors.Wrap(err, "error decoding schema")
-	}
-
-	return s, nil
 }
 
 // Validate validates an instance against the default schema of a Validator.
