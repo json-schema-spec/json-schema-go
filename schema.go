@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/segmentio/errors-go"
@@ -103,10 +104,12 @@ func parseSchemaWithBase(val interface{}, baseURI url.URL) (schema, error) {
 		}
 
 		// uri, err := url.Parse(refStr)
+		fmt.Printf("parsing refStr %#v %#v\n", refStr, baseURI)
 		uri, err := baseURI.Parse(refStr)
 		if err != nil {
 			return s, errors.New("$ref is not valid URI")
 		}
+		fmt.Printf("result %#v %#v\n", refStr, uri)
 
 		baseURI := *uri
 		baseURI.Fragment = ""

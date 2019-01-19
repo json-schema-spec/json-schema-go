@@ -266,5 +266,47 @@
         ]
       }
     ]
+  },
+  {
+    "name": "relative URL handling",
+    "registry": [
+      {
+        "$id": "http://example.com/foo/",
+        "$ref": "#/foobar/baz",
+        "foobar": {
+          "baz": {
+            "type": "null"
+          }
+        }
+      },
+      {
+        "$id": "http://example.com/foo/bar/baz",
+        "$ref": "../#/foobar/baz"
+      }
+    ],
+    "schema": {
+      "$ref": "http://example.com/foo/bar/baz",
+      "foobar": {
+        "baz": {
+          "type": "string"
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/foobar/baz/type",
+            "uri": "http://example.com/foo/"
+          }
+        ]
+      }
+    ]
   }
 ]
