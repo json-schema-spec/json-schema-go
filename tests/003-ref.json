@@ -133,7 +133,10 @@
         "errors": []
       },
       {
-        "instance": [[], "a"],
+        "instance": [
+          [],
+          "a"
+        ],
         "errors": [
           {
             "instancePath": "/1",
@@ -142,7 +145,20 @@
         ]
       },
       {
-        "instance": [[], [[]], [[[], ["a"]]]],
+        "instance": [
+          [],
+          [
+            []
+          ],
+          [
+            [
+              [],
+              [
+                "a"
+              ]
+            ]
+          ]
+        ],
         "errors": [
           {
             "instancePath": "/2/0/1/0",
@@ -176,7 +192,10 @@
         "errors": []
       },
       {
-        "instance": [[], "a"],
+        "instance": [
+          [],
+          "a"
+        ],
         "errors": [
           {
             "instancePath": "/1",
@@ -186,12 +205,63 @@
         ]
       },
       {
-        "instance": [[], [[]], [[[], ["a"]]]],
+        "instance": [
+          [],
+          [
+            []
+          ],
+          [
+            [
+              [],
+              [
+                "a"
+              ]
+            ]
+          ]
+        ],
         "errors": [
           {
             "instancePath": "/2/0/1/0",
             "schemaPath": "/type",
             "uri": "urn:example:bar"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "changing base URI",
+    "registry": [
+      {
+        "$id": "http://example.com/foo",
+        "$ref": "#/foobar/baz",
+        "foobar": {
+          "baz": {
+            "type": "null"
+          }
+        }
+      }
+    ],
+    "schema": {
+      "$ref": "http://example.com/foo",
+      "foobar": {
+        "baz": {
+          "type": "string"
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/foobar/baz/type",
+            "uri": "http://example.com/foo"
           }
         ]
       }

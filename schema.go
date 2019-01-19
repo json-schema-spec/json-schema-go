@@ -64,6 +64,7 @@ func parseSchema(val interface{}) (schema, error) {
 		return s, errors.New("schemas must be map[string]interface{}")
 	}
 
+	baseURI := url.URL{}
 	if id, ok := value["$id"]; ok {
 		idStr, ok := id.(string)
 		if !ok {
@@ -75,7 +76,24 @@ func parseSchema(val interface{}) (schema, error) {
 			return s, errors.New("$id is not valid URI")
 		}
 
-		s.ID = *uri
+		baseURI = *uri
+	}
+
+	result, err := parseSchemaWithBase(value, baseURI)
+	if err != nil {
+		return s, err
+	}
+
+	result.ID = baseURI
+	return result, err
+}
+
+func parseSchemaWithBase(val interface{}, baseURI url.URL) (schema, error) {
+	s := schema{}
+
+	value, ok := val.(map[string]interface{})
+	if !ok {
+		return s, errors.New("schemas must be map[string]interface{}")
 	}
 
 	if ref, ok := value["$ref"]; ok {
@@ -84,7 +102,8 @@ func parseSchema(val interface{}) (schema, error) {
 			return s, errors.New("$ref values must be a string")
 		}
 
-		uri, err := url.Parse(refStr)
+		// uri, err := url.Parse(refStr)
+		uri, err := baseURI.Parse(refStr)
 		if err != nil {
 			return s, errors.New("$ref is not valid URI")
 		}
@@ -135,7 +154,7 @@ func parseSchema(val interface{}) (schema, error) {
 
 	switch items := value["items"].(type) {
 	case map[string]interface{}:
-		subSchema, err := parseSchema(items)
+		subSchema, err := parseSchemaWithBase(items, baseURI)
 		if err != nil {
 			return s, err // todo compose errors
 		}

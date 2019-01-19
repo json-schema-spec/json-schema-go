@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/segmentio/errors-go"
@@ -92,6 +93,8 @@ func (v *Validator) populateRefs(uri url.URL, schema *schema) error {
 
 func (v *Validator) populateRef(uri url.URL, schema *schema) error {
 	if schema.Ref.IsSet && schema.Ref.Schema == nil {
+		fmt.Printf("populating REF! %#v\n", schema.Ref.URI)
+
 		registryRefSchema, ok := v.registry[schema.Ref.URI]
 		if ok {
 			schema.Ref.Schema = registryRefSchema
