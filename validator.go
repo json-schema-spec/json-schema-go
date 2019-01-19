@@ -62,9 +62,9 @@ func (v *Validator) Seal() error {
 	// The body of this loop will modify the map it iterates over. This is fine,
 	// because entries created during iteration won't be visisted. Only entries
 	// that exist prior to the start of the loop need to be visited.
-	for uri, schema := range v.registry {
+	for _, schema := range v.registry {
 		// err := v.populateRefs(uri)
-		err := v.populateRefs(uri, schema)
+		err := v.populateRefs(schema)
 		if err != nil {
 			return err
 		}
@@ -73,15 +73,15 @@ func (v *Validator) Seal() error {
 	return nil
 }
 
-func (v *Validator) populateRefs(uri url.URL, schema *schema) error {
-	err := v.populateRef(uri, schema)
+func (v *Validator) populateRefs(schema *schema) error {
+	err := v.populateRef(schema)
 	if err != nil {
 		return err
 	}
 
 	if schema.Items.Schemas != nil {
 		for i := range schema.Items.Schemas {
-			err := v.populateRefs(uri, &schema.Items.Schemas[i])
+			err := v.populateRefs(&schema.Items.Schemas[i])
 			if err != nil {
 				return err
 			}
@@ -91,7 +91,7 @@ func (v *Validator) populateRefs(uri url.URL, schema *schema) error {
 	return nil
 }
 
-func (v *Validator) populateRef(uri url.URL, schema *schema) error {
+func (v *Validator) populateRef(schema *schema) error {
 	if schema.Ref.IsSet && schema.Ref.Schema == nil {
 		fmt.Printf("populating REF! %#v\n", schema.Ref.URI)
 
@@ -117,7 +117,7 @@ func (v *Validator) populateRef(uri url.URL, schema *schema) error {
 		}
 
 		v.registry[schema.Ref.URI] = &refSchema
-		err = v.populateRefs(schema.Ref.URI, &refSchema)
+		err = v.populateRefs(&refSchema)
 		if err != nil {
 			return err
 		}
