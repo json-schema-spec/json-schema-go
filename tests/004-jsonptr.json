@@ -1,0 +1,87 @@
+[
+  {
+    "name": "JSON Pointer slash escaping",
+    "registry": [],
+    "schema": {
+      "$ref": "#/~1~1~1~1",
+      "////": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/~1~1~1~1/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "JSON Pointer tilde escaping",
+    "registry": [],
+    "schema": {
+      "$ref": "#/~1~0~0~1",
+      "/~~/": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/~1~0~0~1/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "JSON Pointer escaped property names",
+    "registry": [],
+    "schema": {
+      "$ref": "#/~1/~0/~0~1///~1",
+      "/": {
+        "~": {
+          "~/": {
+            "": {
+              "": {
+                "/": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/~1/~0/~0~1///~1/type"
+          }
+        ]
+      }
+    ]
+  }
+]
