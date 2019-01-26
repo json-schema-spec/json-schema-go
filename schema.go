@@ -1,10 +1,8 @@
 package jsonschema
 
 import (
-	"fmt"
 	"net/url"
 
-	"github.com/segmentio/errors-go"
 	"github.com/ucarion/json-pointer"
 )
 
@@ -57,107 +55,47 @@ type schemaRef struct {
 	Ptr     jsonpointer.Ptr
 }
 
-func parseSchema(val interface{}) (schema, error) {
+func parseRootSchema(input map[string]interface{}) (schema, error) {
 	s := schema{}
 
-	value, ok := val.(map[string]interface{})
-	if !ok {
-		return s, errors.New("schemas must be map[string]interface{}")
-	}
-
-	baseURI := url.URL{}
-	if id, ok := value["$id"]; ok {
-		idStr, ok := id.(string)
-		if !ok {
-			return s, errors.New("$id values must be a string")
-		}
-
-		uri, err := url.Parse(idStr)
-		if err != nil {
-			return s, errors.New("$id is not valid URI")
-		}
-
-		baseURI = *uri
-	}
-
-	result, err := parseSchemaWithBase(value, baseURI)
-	if err != nil {
-		return s, err
-	}
-
-	result.ID = baseURI
-	return result, err
-}
-
-func parseSchemaWithBase(val interface{}, baseURI url.URL) (schema, error) {
-	s := schema{}
-
-	value, ok := val.(map[string]interface{})
-	if !ok {
-		return s, errors.New("schemas must be map[string]interface{}")
-	}
-
-	if ref, ok := value["$ref"]; ok {
-		refStr, ok := ref.(string)
-		if !ok {
-			return s, errors.New("$ref values must be a string")
-		}
-
-		// uri, err := url.Parse(refStr)
-		fmt.Printf("parsing refStr %#v %#v\n", refStr, baseURI)
-		uri, err := baseURI.Parse(refStr)
-		if err != nil {
-			return s, errors.New("$ref is not valid URI")
-		}
-		fmt.Printf("result %#v %#v\n", refStr, uri)
-
-		baseURI := *uri
-		baseURI.Fragment = ""
-
-		ptr, err := jsonpointer.New(uri.Fragment)
-		if err != nil {
-			return s, errors.New("$ref fragment is not a valid JSON Pointer")
-		}
-
-		s.Ref.IsSet = true
-		s.Ref.URI = *uri
-		s.Ref.BaseURI = baseURI
-		s.Ref.Ptr = ptr
-	}
-
-	switch typ := value["type"].(type) {
-	case string:
-		jsonTyp, err := parseJSONType(typ)
-		if err != nil {
-			return s, err
-		}
-
-		s.Type.IsSet = true
-		s.Type.IsSingle = true
-		s.Type.Types = []jsonType{jsonTyp}
-	case []interface{}:
-		s.Type.IsSet = true
-		s.Type.IsSingle = false
-		s.Type.Types = make([]jsonType, len(typ))
-
-		for i, t := range typ {
-			t, ok := t.(string)
-			if !ok {
-				return s, errors.New("non-string value in type member") // todo error types
-			}
-
-			jsonTyp, err := parseJSONType(t)
+	typeValue, ok := input["type"]
+	if ok {
+		switch typ := typeValue.(type) {
+		case string:
+			jsonTyp, err := parseJSONType(typ)
 			if err != nil {
 				return s, err
 			}
 
-			s.Type.Types[i] = jsonTyp
+			s.Type.IsSet = true
+			s.Type.IsSingle = true
+			s.Type.Types = []jsonType{jsonTyp}
+		case []interface{}:
+			s.Type.IsSet = true
+			s.Type.IsSingle = false
+			s.Type.Types = make([]jsonType, len(typ))
+
+			for i, t := range typ {
+				t, ok := t.(string)
+				if !ok {
+					return s, invalidTypeValue()
+				}
+
+				jsonTyp, err := parseJSONType(t)
+				if err != nil {
+					return s, err
+				}
+
+				s.Type.Types[i] = jsonTyp
+			}
+		default:
+			return s, invalidTypeValue()
 		}
 	}
 
-	switch items := value["items"].(type) {
+	switch items := input["items"].(type) {
 	case map[string]interface{}:
-		subSchema, err := parseSchemaWithBase(items, baseURI)
+		subSchema, err := parseRootSchema(items)
 		if err != nil {
 			return s, err // todo compose errors
 		}
@@ -173,20 +111,153 @@ func parseSchemaWithBase(val interface{}, baseURI url.URL) (schema, error) {
 		for i, item := range items {
 			item, ok := item.(map[string]interface{})
 			if !ok {
-				return s, errors.New("non-map[string]interface{} value in items member") // todo error types
+				return s, schemaNotObject()
 			}
 
-			subSchema, err := parseSchema(item)
+			subSchema, err := parseRootSchema(item)
 			if err != nil {
 				return s, err
 			}
 
 			s.Items.Schemas[i] = subSchema
 		}
+	default:
+		return s, schemaNotObject()
 	}
 
 	return s, nil
 }
+
+// func parseSchema(val interface{}) (schema, error) {
+// 	s := schema{}
+
+// 	value, ok := val.(map[string]interface{})
+// 	if !ok {
+// 		return s, errors.New("schemas must be map[string]interface{}")
+// 	}
+
+// 	baseURI := url.URL{}
+// 	if id, ok := value["$id"]; ok {
+// 		idStr, ok := id.(string)
+// 		if !ok {
+// 			return s, errors.New("$id values must be a string")
+// 		}
+
+// 		uri, err := url.Parse(idStr)
+// 		if err != nil {
+// 			return s, errors.New("$id is not valid URI")
+// 		}
+
+// 		baseURI = *uri
+// 	}
+
+// 	result, err := parseSchemaWithBase(value, baseURI)
+// 	if err != nil {
+// 		return s, err
+// 	}
+
+// 	result.ID = baseURI
+// 	return result, err
+// }
+
+// func parseSchemaWithBase(val interface{}, baseURI url.URL) (schema, error) {
+// 	s := schema{}
+
+// 	value, ok := val.(map[string]interface{})
+// 	if !ok {
+// 		return s, errors.New("schemas must be map[string]interface{}")
+// 	}
+
+// 	if ref, ok := value["$ref"]; ok {
+// 		refStr, ok := ref.(string)
+// 		if !ok {
+// 			return s, errors.New("$ref values must be a string")
+// 		}
+
+// 		// uri, err := url.Parse(refStr)
+// 		fmt.Printf("parsing refStr %#v %#v\n", refStr, baseURI)
+// 		uri, err := baseURI.Parse(refStr)
+// 		if err != nil {
+// 			return s, errors.New("$ref is not valid URI")
+// 		}
+// 		fmt.Printf("result %#v %#v\n", refStr, uri)
+
+// 		baseURI := *uri
+// 		baseURI.Fragment = ""
+
+// 		ptr, err := jsonpointer.New(uri.Fragment)
+// 		if err != nil {
+// 			return s, errors.New("$ref fragment is not a valid JSON Pointer")
+// 		}
+
+// 		s.Ref.IsSet = true
+// 		s.Ref.URI = *uri
+// 		s.Ref.BaseURI = baseURI
+// 		s.Ref.Ptr = ptr
+// 	}
+
+// 	switch typ := value["type"].(type) {
+// 	case string:
+// 		jsonTyp, err := parseJSONType(typ)
+// 		if err != nil {
+// 			return s, err
+// 		}
+
+// 		s.Type.IsSet = true
+// 		s.Type.IsSingle = true
+// 		s.Type.Types = []jsonType{jsonTyp}
+// 	case []interface{}:
+// 		s.Type.IsSet = true
+// 		s.Type.IsSingle = false
+// 		s.Type.Types = make([]jsonType, len(typ))
+
+// 		for i, t := range typ {
+// 			t, ok := t.(string)
+// 			if !ok {
+// 				return s, errors.New("non-string value in type member") // todo error types
+// 			}
+
+// 			jsonTyp, err := parseJSONType(t)
+// 			if err != nil {
+// 				return s, err
+// 			}
+
+// 			s.Type.Types[i] = jsonTyp
+// 		}
+// 	}
+
+// 	switch items := value["items"].(type) {
+// 	case map[string]interface{}:
+// 		subSchema, err := parseSchemaWithBase(items, baseURI)
+// 		if err != nil {
+// 			return s, err // todo compose errors
+// 		}
+
+// 		s.Items.IsSet = true
+// 		s.Items.IsSingle = true
+// 		s.Items.Schemas = []schema{subSchema}
+// 	case []interface{}:
+// 		s.Items.IsSet = true
+// 		s.Items.IsSingle = false
+// 		s.Items.Schemas = make([]schema, len(items))
+
+// 		for i, item := range items {
+// 			item, ok := item.(map[string]interface{})
+// 			if !ok {
+// 				return s, errors.New("non-map[string]interface{} value in items member") // todo error types
+// 			}
+
+// 			subSchema, err := parseSchema(item)
+// 			if err != nil {
+// 				return s, err
+// 			}
+
+// 			s.Items.Schemas[i] = subSchema
+// 		}
+// 	}
+
+// 	return s, nil
+// }
 
 func parseJSONType(typ string) (jsonType, error) {
 	switch typ {
@@ -205,6 +276,6 @@ func parseJSONType(typ string) (jsonType, error) {
 	case "object":
 		return jsonTypeObject, nil
 	default:
-		return 0, errors.New("bad json type") // todo error types
+		return 0, invalidTypeValue()
 	}
 }
