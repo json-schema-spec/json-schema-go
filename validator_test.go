@@ -47,6 +47,26 @@ func TestValidatorSeal(t *testing.T) {
 			},
 			"SchemaNotObject",
 		},
+		{
+			"items value empty array",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"items": []interface{}{},
+				},
+			},
+			"",
+		},
+		{
+			"element of items not object",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"items": []interface{}{
+						"foo",
+					},
+				},
+			},
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {
