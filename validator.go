@@ -54,11 +54,29 @@ func (v *Validator) Seal() error {
 		registry[parsed.ID] = parsed
 	}
 
+	v.registry = registry
 	return nil
 }
 
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
-	return ValidationResult{}, nil
+	id := url.URL{}
+	vm := vm{
+		registry: v.registry,
+		stack: stack{
+			instance: []string{},
+			schemas:  []schemaStack{},
+		},
+		errors: []ValidationError{},
+	}
+
+	err := vm.exec(id, instance)
+	if err != nil {
+		return ValidationResult{}, err
+	}
+
+	return ValidationResult{
+		Errors: vm.errors,
+	}, nil
 }
 
 // // Register parses and compiles a Schema and adds it to the Validator's
@@ -187,22 +205,4 @@ func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
 
 // // Validate validates an instance against the default schema of a Validator.
 // func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
-// 	id := url.URL{}
-// 	vm := vm{
-// 		registry: v.registry,
-// 		stack: stack{
-// 			instance: []string{},
-// 			schemas:  []schemaStack{},
-// 		},
-// 		errors: []ValidationError{},
-// 	}
-
-// 	err := vm.exec(id, instance)
-// 	if err != nil {
-// 		return ValidationResult{}, err
-// 	}
-
-// 	return ValidationResult{
-// 		Errors: vm.errors,
-// 	}, nil
 // }
