@@ -93,36 +93,39 @@ func parseRootSchema(input map[string]interface{}) (schema, error) {
 		}
 	}
 
-	switch items := input["items"].(type) {
-	case map[string]interface{}:
-		subSchema, err := parseRootSchema(items)
-		if err != nil {
-			return s, err // todo compose errors
-		}
-
-		s.Items.IsSet = true
-		s.Items.IsSingle = true
-		s.Items.Schemas = []schema{subSchema}
-	case []interface{}:
-		s.Items.IsSet = true
-		s.Items.IsSingle = false
-		s.Items.Schemas = make([]schema, len(items))
-
-		for i, item := range items {
-			item, ok := item.(map[string]interface{})
-			if !ok {
-				return s, schemaNotObject()
-			}
-
-			subSchema, err := parseRootSchema(item)
+	itemsValue, ok := input["items"]
+	if ok {
+		switch items := itemsValue.(type) {
+		case map[string]interface{}:
+			subSchema, err := parseRootSchema(items)
 			if err != nil {
 				return s, err
 			}
 
-			s.Items.Schemas[i] = subSchema
+			s.Items.IsSet = true
+			s.Items.IsSingle = true
+			s.Items.Schemas = []schema{subSchema}
+		case []interface{}:
+			s.Items.IsSet = true
+			s.Items.IsSingle = false
+			s.Items.Schemas = make([]schema, len(items))
+
+			for i, item := range items {
+				item, ok := item.(map[string]interface{})
+				if !ok {
+					return s, schemaNotObject()
+				}
+
+				subSchema, err := parseRootSchema(item)
+				if err != nil {
+					return s, err
+				}
+
+				s.Items.Schemas[i] = subSchema
+			}
+		default:
+			return s, schemaNotObject()
 		}
-	default:
-		return s, schemaNotObject()
 	}
 
 	return s, nil

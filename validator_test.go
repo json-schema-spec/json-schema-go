@@ -14,6 +14,13 @@ func TestValidatorSeal(t *testing.T) {
 		err     string
 	}{
 		{
+			"empty object",
+			[]map[string]interface{}{
+				map[string]interface{}{},
+			},
+			"",
+		},
+		{
 			"type not string",
 			[]map[string]interface{}{
 				map[string]interface{}{
@@ -32,7 +39,7 @@ func TestValidatorSeal(t *testing.T) {
 			"InvalidTypeValue",
 		},
 		{
-			"schema not object",
+			"items value not object",
 			[]map[string]interface{}{
 				map[string]interface{}{
 					"items": "foo",
@@ -50,7 +57,11 @@ func TestValidatorSeal(t *testing.T) {
 			}
 
 			err := validator.Seal()
-			assert.True(t, errors.Is(tt.err, err), "expected %#v to be %s", err, tt.err)
+			if tt.err == "" {
+				assert.Equal(t, nil, err)
+			} else {
+				assert.True(t, errors.Is(tt.err, err), "expected %#v to be %s", err, tt.err)
+			}
 		})
 	}
 }
