@@ -61,6 +61,9 @@ func TestValidatorSpec(t *testing.T) {
 
 					err = validator.Seal()
 					assert.Nil(t, err)
+					if err != nil {
+						return
+					}
 
 					for i, instance := range tt.Instances {
 						t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {

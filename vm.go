@@ -46,10 +46,11 @@ type schemaStack struct {
 }
 
 func (vm *vm) exec(uri url.URL, instance interface{}) error {
-	for k, v := range vm.registry {
-		fmt.Printf("%#v :: %#v\n", k.String(), v)
-	}
-	fmt.Println("---")
+	// fmt.Println("--- DUMPING REGISTRY ---")
+	// for k, v := range vm.registry {
+	// 	fmt.Printf("%#v :: %#v\n", k.String(), v)
+	// }
+	// fmt.Println("---")
 
 	schema, ok := vm.registry[uri]
 	if !ok {
@@ -69,8 +70,10 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 
 func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	if schema.Ref.IsSet {
-		fmt.Println("schema ref is set")
-		fmt.Printf("%#v\n", schema.Ref)
+		// fmt.Println("ref: schema ref is set")
+		// fmt.Println("ref: uri: ", schema.Ref.URI.String())
+		// fmt.Printf("ref: referring schema: %#v\n", schema)
+		// fmt.Printf("ref: referent schema: %#v\n", schema.Ref.Schema)
 
 		schemaTokens := make([]string, len(schema.Ref.Ptr.Tokens))
 		copy(schemaTokens, schema.Ref.Ptr.Tokens)

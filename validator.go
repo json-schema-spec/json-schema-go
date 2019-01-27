@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/pkg/errors"
@@ -45,14 +46,82 @@ func (v *Validator) Register(schema map[string]interface{}) {
 
 func (v *Validator) Seal() error {
 	registry := map[url.URL]schema{}
+	rawSchemas := map[url.URL]map[string]interface{}{}
+	urisToProcess := []url.URL{}
+
 	for i, schema := range v.schemas {
 		parsed, err := parseRootSchema(schema)
 		if err != nil {
 			return errors.Wrapf(err, "errors parsing schema %d", i)
 		}
 
+		// fmt.Printf("parsed: %#v\n", parsed)
+
 		registry[parsed.ID] = parsed
+		rawSchemas[parsed.ID] = schema
+		urisToProcess = append(urisToProcess, parsed.ID)
 	}
+
+	for len(urisToProcess) > 0 {
+		toProcess := urisToProcess
+		urisToProcess = []url.URL{}
+
+		for _, uri := range toProcess {
+			// fmt.Println("processing", uri.String())
+			schema := registry[uri]
+
+			// fmt.Printf("%#v\n", rawSchemas)
+			// fmt.Printf("%#v\n", schema)
+			if !schema.Ref.IsSet || schema.Ref.Schema != nil {
+				// fmt.Println("skipping")
+				continue
+			}
+
+			// fmt.Println("process ref", schema.Ref.URI.String())
+
+			if registrySchema, ok := registry[schema.Ref.URI]; ok {
+				schema.Ref.Schema = &registrySchema
+				registry[uri] = schema
+				continue
+			}
+
+			baseRawSchema, ok := rawSchemas[schema.Ref.BaseURI]
+			if !ok {
+				return invalidRef()
+			}
+
+			rawRefValue, err := schema.Ref.Ptr.Eval(baseRawSchema)
+			if err != nil {
+				return errors.Wrapf(err, "error evaluating JSON Pointer %#v", schema.Ref.Ptr)
+			}
+
+			rawRefSchema, ok := (*rawRefValue).(map[string]interface{})
+			if !ok {
+				return schemaNotObject()
+			}
+
+			refSchema, err := parseSubSchema(schema.Ref.BaseURI, rawRefSchema)
+			if err != nil {
+				return err
+			}
+
+			// update the referring schema and add it back to registry
+			schema.Ref.Schema = &refSchema
+			registry[uri] = schema
+
+			// add the referred schema to registry and enqueue it for processing
+			registry[schema.Ref.URI] = refSchema
+			urisToProcess = append(urisToProcess, schema.Ref.URI)
+		}
+	}
+
+	fmt.Println("--- DUMPING REGISTRY FROM VALIDATOR ---")
+	for k, v := range registry {
+		fmt.Printf("%#v :: %#v\n", k.String(), v)
+	}
+	fmt.Println("---")
+
+	fmt.Printf("what does root refer to? %#v\n", registry[url.URL{}].Ref.Schema)
 
 	v.registry = registry
 	return nil
