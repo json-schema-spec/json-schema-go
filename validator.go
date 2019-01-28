@@ -33,14 +33,10 @@ type ValidationError struct {
 }
 
 // NewValidator constructs a new, empty Validator.
-func NewValidator() Validator {
+func NewValidator(schemas []map[string]interface{}) Validator {
 	return Validator{
-		schemas: []map[string]interface{}{},
+		schemas: schemas,
 	}
-}
-
-func (v *Validator) Register(schema map[string]interface{}) {
-	v.schemas = append(v.schemas, schema)
 }
 
 func (v *Validator) Seal() ([]url.URL, error) {

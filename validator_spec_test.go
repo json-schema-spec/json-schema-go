@@ -52,12 +52,9 @@ func TestValidatorSpec(t *testing.T) {
 
 			for _, tt := range testCases {
 				t.Run(tt.Name, func(t *testing.T) {
-					validator := NewValidator()
-					for _, schema := range tt.Registry {
-						validator.Register(schema)
-					}
-
-					validator.Register(tt.Schema)
+					schemas := []map[string]interface{}{tt.Schema}
+					schemas = append(schemas, tt.Registry...)
+					validator := NewValidator(schemas)
 
 					undefinedURIs, err := validator.Seal()
 					assert.Empty(t, undefinedURIs)
