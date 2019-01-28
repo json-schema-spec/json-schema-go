@@ -1,7 +1,6 @@
 package jsonschema
 
 import (
-	"fmt"
 	"net/url"
 
 	"github.com/pkg/errors"
@@ -44,14 +43,14 @@ func (v *Validator) Register(schema map[string]interface{}) {
 	v.schemas = append(v.schemas, schema)
 }
 
-func (v *Validator) Seal() error {
+func (v *Validator) Seal() ([]url.URL, error) {
 	registry := newRegistry(32)
 	rawSchemas := map[url.URL]map[string]interface{}{}
 
 	for i, schema := range v.schemas {
 		parsed, err := parseRootSchema(&registry, schema)
 		if err != nil {
-			return errors.Wrapf(err, "errors parsing schema %d", i)
+			return []url.URL{}, errors.Wrapf(err, "errors parsing schema %d", i)
 		}
 
 		rawSchemas[parsed.ID] = schema
@@ -68,22 +67,22 @@ func (v *Validator) Seal() error {
 			if rawSchema, ok := rawSchemas[baseURI]; ok {
 				ptr, err := jsonpointer.New(uri.Fragment)
 				if err != nil {
-					return err
+					return []url.URL{}, err
 				}
 
 				rawRefSchema, err := ptr.Eval(rawSchema)
 				if err != nil {
-					return err
+					return []url.URL{}, err
 				}
 
 				refSchemaObject, ok := (*rawRefSchema).(map[string]interface{})
 				if !ok {
-					return schemaNotObject()
+					return []url.URL{}, schemaNotObject()
 				}
 
 				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, refSchemaObject)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			} else {
 				undefinedURIs = append(undefinedURIs, baseURI)
@@ -94,11 +93,11 @@ func (v *Validator) Seal() error {
 	}
 
 	if len(undefinedURIs) > 0 {
-		return fmt.Errorf("missing URIs: %#v", undefinedURIs)
+		return undefinedURIs, uriNotDefined()
 	}
 
 	v.registry = registry
-	return nil
+	return nil, nil
 }
 
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {

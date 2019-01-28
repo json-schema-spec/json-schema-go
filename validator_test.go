@@ -76,7 +76,7 @@ func TestValidatorSeal(t *testing.T) {
 				validator.Register(s)
 			}
 
-			err := validator.Seal()
+			_, err := validator.Seal()
 			if tt.err == "" {
 				assert.Equal(t, nil, err)
 			} else {

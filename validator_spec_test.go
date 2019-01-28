@@ -59,7 +59,8 @@ func TestValidatorSpec(t *testing.T) {
 
 					validator.Register(tt.Schema)
 
-					err = validator.Seal()
+					undefinedURIs, err := validator.Seal()
+					assert.Empty(t, undefinedURIs)
 					assert.Nil(t, err)
 					if err != nil {
 						return

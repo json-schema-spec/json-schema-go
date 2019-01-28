@@ -8,7 +8,7 @@ type Error struct {
 	idNotString      bool
 	invalidURI       bool
 	refNotString     bool
-	invalidRef       bool
+	uriNotDefined    bool
 }
 
 func invalidTypeValue() *Error {
@@ -31,8 +31,8 @@ func refNotString() *Error {
 	return &Error{refNotString: true}
 }
 
-func invalidRef() *Error {
-	return &Error{invalidRef: true}
+func uriNotDefined() *Error {
+	return &Error{uriNotDefined: true}
 }
 
 // InvalidTypeValue is whether an Error indicates a "type" keyword value wasn't
