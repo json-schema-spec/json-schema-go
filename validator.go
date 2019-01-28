@@ -32,7 +32,18 @@ type ValidationError struct {
 	URI url.URL
 }
 
-// NewValidator constructs a new, empty Validator.
+// NewValidator constructs a new Validator that will use the given schemas.
+//
+// If any of the given schemas lack an "$id" field, then the last such schema
+// will be used as the default schema of the Validator.
+//
+// If any schemas cross-reference schemas not present in the given list, then an
+// error will be included, and the missing schema's ID will be returned in the
+// list of url.URL.
+//
+// Each reference to a missing schema will result in an additional entry in the
+// returned list. It is therefore possible for the same URI to appear multiple
+// times in the list.
 func NewValidator(schemas []map[string]interface{}) (Validator, []url.URL, error) {
 	v := Validator{
 		schemas: schemas,
@@ -99,6 +110,8 @@ func (v *Validator) seal() ([]url.URL, error) {
 	return nil, nil
 }
 
+// Validate evaluates the given instance against the default schema of the
+// Validator.
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
 	id := url.URL{}
 	vm := vm{

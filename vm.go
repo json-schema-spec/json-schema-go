@@ -58,10 +58,11 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 	}
 
 	vm.pushNewSchema(uri, fragPtr.Tokens)
-	return vm.execSchema(schema, instance)
+	vm.execSchema(schema, instance)
+	return nil
 }
 
-func (vm *vm) execSchema(schema schema, instance interface{}) error {
+func (vm *vm) execSchema(schema schema, instance interface{}) {
 	if schema.Ref.IsSet {
 		refSchema := vm.registry.GetIndex(schema.Ref.Schema)
 
@@ -148,8 +149,6 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		// TODO a better error here
 		panic("unexpected non-json input")
 	}
-
-	return nil
 }
 
 func (vm *vm) pushNewSchema(id url.URL, tokens []string) {
