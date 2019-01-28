@@ -10,8 +10,7 @@ import (
 )
 
 type vm struct {
-	// registry is a set of Schemas, indexed by their IDs
-	registry map[url.URL]schema
+	registry registry
 
 	// stack holds state used for error-message generation
 	stack stack
@@ -46,13 +45,7 @@ type schemaStack struct {
 }
 
 func (vm *vm) exec(uri url.URL, instance interface{}) error {
-	// fmt.Println("--- DUMPING REGISTRY ---")
-	// for k, v := range vm.registry {
-	// 	fmt.Printf("%#v :: %#v\n", k.String(), v)
-	// }
-	// fmt.Println("---")
-
-	schema, ok := vm.registry[uri]
+	schema, ok := vm.registry.Get(uri)
 	if !ok {
 		// TODO custom error types
 		return fmt.Errorf("no schema with uri: %#v", uri)
@@ -70,16 +63,13 @@ func (vm *vm) exec(uri url.URL, instance interface{}) error {
 
 func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	if schema.Ref.IsSet {
-		// fmt.Println("ref: schema ref is set")
-		// fmt.Println("ref: uri: ", schema.Ref.URI.String())
-		// fmt.Printf("ref: referring schema: %#v\n", schema)
-		// fmt.Printf("ref: referent schema: %#v\n", schema.Ref.Schema)
+		refSchema := vm.registry.GetIndex(schema.Ref.Schema)
 
 		schemaTokens := make([]string, len(schema.Ref.Ptr.Tokens))
 		copy(schemaTokens, schema.Ref.Ptr.Tokens)
 
 		vm.pushNewSchema(schema.Ref.BaseURI, schemaTokens)
-		vm.execSchema(*schema.Ref.Schema, instance)
+		vm.execSchema(refSchema, instance)
 		vm.popSchema()
 	}
 
@@ -125,19 +115,23 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.Items.IsSet {
 			if schema.Items.IsSingle {
 				vm.pushSchemaToken("items")
+
+				itemSchema := vm.registry.GetIndex(schema.Items.Schemas[0])
 				for i, elem := range val {
 					vm.pushInstanceToken(strconv.FormatInt(int64(i), 10))
-					vm.execSchema(schema.Items.Schemas[0], elem)
+					vm.execSchema(itemSchema, elem)
 					vm.popInstanceToken()
 				}
 				vm.popSchemaToken()
 			} else {
 				vm.pushSchemaToken("items")
 				for i := 0; i < len(schema.Items.Schemas) && i < len(val); i++ {
+					itemSchema := vm.registry.GetIndex(schema.Items.Schemas[i])
 					token := strconv.FormatInt(int64(i), 10)
+
 					vm.pushInstanceToken(token)
 					vm.pushSchemaToken(token)
-					vm.execSchema(schema.Items.Schemas[i], val[i])
+					vm.execSchema(itemSchema, val[i])
 					vm.popInstanceToken()
 					vm.popSchemaToken()
 				}

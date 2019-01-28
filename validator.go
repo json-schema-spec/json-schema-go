@@ -11,7 +11,7 @@ import (
 // Validator compiles schemas and evaluates instances.
 type Validator struct {
 	schemas  []map[string]interface{}
-	registry map[url.URL]schema
+	registry registry
 }
 
 // ValidationResult contains information on whether an instance successfully
@@ -45,83 +45,57 @@ func (v *Validator) Register(schema map[string]interface{}) {
 }
 
 func (v *Validator) Seal() error {
-	registry := map[url.URL]schema{}
+	registry := newRegistry(32)
 	rawSchemas := map[url.URL]map[string]interface{}{}
-	urisToProcess := []url.URL{}
 
 	for i, schema := range v.schemas {
-		parsed, err := parseRootSchema(schema)
+		parsed, err := parseRootSchema(&registry, schema)
 		if err != nil {
 			return errors.Wrapf(err, "errors parsing schema %d", i)
 		}
 
-		// fmt.Printf("parsed: %#v\n", parsed)
-
-		registry[parsed.ID] = parsed
 		rawSchemas[parsed.ID] = schema
-		urisToProcess = append(urisToProcess, parsed.ID)
 	}
 
-	for len(urisToProcess) > 0 {
-		toProcess := urisToProcess
-		urisToProcess = []url.URL{}
+	missingURIs := registry.PopulateRefs() // uris which must be accounted for
+	undefinedURIs := []url.URL{}           // uris which cannot be accounted for
 
-		for _, uri := range toProcess {
-			// fmt.Println("processing", uri.String())
-			schema := registry[uri]
+	for len(missingURIs) > 0 && len(undefinedURIs) == 0 {
+		for _, uri := range missingURIs {
+			baseURI := uri
+			baseURI.Fragment = ""
 
-			// fmt.Printf("%#v\n", rawSchemas)
-			// fmt.Printf("%#v\n", schema)
-			if !schema.Ref.IsSet || schema.Ref.Schema != nil {
-				// fmt.Println("skipping")
-				continue
+			if rawSchema, ok := rawSchemas[baseURI]; ok {
+				ptr, err := jsonpointer.New(uri.Fragment)
+				if err != nil {
+					return err
+				}
+
+				rawRefSchema, err := ptr.Eval(rawSchema)
+				if err != nil {
+					return err
+				}
+
+				refSchemaObject, ok := (*rawRefSchema).(map[string]interface{})
+				if !ok {
+					return schemaNotObject()
+				}
+
+				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, refSchemaObject)
+				if err != nil {
+					return err
+				}
+			} else {
+				undefinedURIs = append(undefinedURIs, baseURI)
 			}
-
-			// fmt.Println("process ref", schema.Ref.URI.String())
-
-			if registrySchema, ok := registry[schema.Ref.URI]; ok {
-				schema.Ref.Schema = &registrySchema
-				registry[uri] = schema
-				continue
-			}
-
-			baseRawSchema, ok := rawSchemas[schema.Ref.BaseURI]
-			if !ok {
-				return invalidRef()
-			}
-
-			rawRefValue, err := schema.Ref.Ptr.Eval(baseRawSchema)
-			if err != nil {
-				return errors.Wrapf(err, "error evaluating JSON Pointer %#v", schema.Ref.Ptr)
-			}
-
-			rawRefSchema, ok := (*rawRefValue).(map[string]interface{})
-			if !ok {
-				return schemaNotObject()
-			}
-
-			refSchema, err := parseSubSchema(schema.Ref.BaseURI, rawRefSchema)
-			if err != nil {
-				return err
-			}
-
-			// update the referring schema and add it back to registry
-			schema.Ref.Schema = &refSchema
-			registry[uri] = schema
-
-			// add the referred schema to registry and enqueue it for processing
-			registry[schema.Ref.URI] = refSchema
-			urisToProcess = append(urisToProcess, schema.Ref.URI)
 		}
+
+		missingURIs = registry.PopulateRefs()
 	}
 
-	fmt.Println("--- DUMPING REGISTRY FROM VALIDATOR ---")
-	for k, v := range registry {
-		fmt.Printf("%#v :: %#v\n", k.String(), v)
+	if len(undefinedURIs) > 0 {
+		return fmt.Errorf("missing URIs: %#v", undefinedURIs)
 	}
-	fmt.Println("---")
-
-	fmt.Printf("what does root refer to? %#v\n", registry[url.URL{}].Ref.Schema)
 
 	v.registry = registry
 	return nil
@@ -147,131 +121,3 @@ func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
 		Errors: vm.errors,
 	}, nil
 }
-
-// // Register parses and compiles a Schema and adds it to the Validator's
-// // registry.
-// //
-// // If the registered schema lacks an "$id" keyword, then that schema will be
-// // considered the new "default" schema.
-// func (v *Validator) Register(schema map[string]interface{}) error {
-// 	parsed, err := parseSchema(schema)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	v.schemas[parsed.ID] = schema
-// 	v.registry[parsed.ID] = &parsed
-
-// 	return nil
-// }
-
-// func (v *Validator) Seal() error {
-// 	// The body of this loop will modify the map it iterates over. This is fine,
-// 	// because entries created during iteration won't be visisted. Only entries
-// 	// that exist prior to the start of the loop need to be visited.
-// 	for _, schema := range v.registry {
-// 		// err := v.populateRefs(uri)
-// 		err := v.populateRefs(schema)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (v *Validator) populateRefs(schema *schema) error {
-// 	err := v.populateRef(schema)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if schema.Items.Schemas != nil {
-// 		for i := range schema.Items.Schemas {
-// 			err := v.populateRefs(&schema.Items.Schemas[i])
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (v *Validator) populateRef(schema *schema) error {
-// 	if schema.Ref.IsSet && schema.Ref.Schema == nil {
-// 		fmt.Printf("populating REF! %#v\n", schema.Ref.URI)
-
-// 		registryRefSchema, ok := v.registry[schema.Ref.URI]
-// 		if ok {
-// 			schema.Ref.Schema = registryRefSchema
-// 			return nil
-// 		}
-
-// 		refSchemaBaseValue, ok := v.schemas[schema.Ref.BaseURI]
-// 		if !ok {
-// 			return errors.New("no schema with URI") // todo error type
-// 		}
-
-// 		refSchemaValue, err := schema.Ref.Ptr.Eval(refSchemaBaseValue)
-// 		if err != nil {
-// 			return errors.Wrap(err, "error evaluating $ref JSON Pointer")
-// 		}
-
-// 		refSchema, err := parseSchema(*refSchemaValue)
-// 		if err != nil {
-// 			return errors.Wrap(err, "$ref points to non-schema value")
-// 		}
-
-// 		v.registry[schema.Ref.URI] = &refSchema
-// 		err = v.populateRefs(&refSchema)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		schema.Ref.Schema = &refSchema
-// 	}
-
-// 	return nil
-// }
-
-// // func (v *Validator) populateRefs(uri url.URL) error {
-// // 	schema := v.registry[uri]
-
-// // 	if schema.Ref.IsSet && schema.Ref.Schema == nil {
-// // 		refSchemaBaseValue, ok := v.schemas[schema.Ref.BaseURI]
-// // 		if !ok {
-// // 			return errors.New("no schema with URI") // todo error type
-// // 		}
-
-// // 		refSchemaValue, err := schema.Ref.Ptr.Eval(refSchemaBaseValue)
-// // 		if err != nil {
-// // 			return errors.Wrap(err, "error evaluating $ref JSON Pointer")
-// // 		}
-
-// // 		refSchema, err := parseSchema(*refSchemaValue)
-// // 		if err != nil {
-// // 			return errors.Wrap(err, "$ref points to non-schema value")
-// // 		}
-
-// // 		v.registry[schema.Ref.URI] = &refSchema
-// // 		err = v.populateRefs(schema.Ref.URI)
-// // 		if err != nil {
-// // 			return err
-// // 		}
-
-// // 		schema.Ref.Schema = &refSchema
-// // 	}
-
-// // 	// if schema.Items.Schemas != nil {
-// // 	// 	for _, subSchema := range schema.Items.Schemas {
-
-// // 	// 	}
-// // 	// }
-
-// // 	return nil
-// // }
-
-// // Validate validates an instance against the default schema of a Validator.
-// func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
-// }
