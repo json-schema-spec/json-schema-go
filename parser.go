@@ -8,63 +8,6 @@ import (
 	"github.com/ucarion/json-pointer"
 )
 
-type schema struct {
-	ID    url.URL
-	Ref   schemaRef
-	Type  schemaType
-	Items schemaItems
-}
-
-type schemaType struct {
-	IsSet    bool
-	IsSingle bool
-	Types    []jsonType
-}
-
-type jsonType int
-
-const (
-	jsonTypeNull jsonType = iota + 1
-	jsonTypeBoolean
-	jsonTypeNumber
-	jsonTypeInteger
-	jsonTypeString
-	jsonTypeArray
-	jsonTypeObject
-)
-
-func (t schemaType) contains(typ jsonType) bool {
-	for _, t := range t.Types {
-		if t == typ {
-			return true
-		}
-	}
-
-	return false
-}
-
-type schemaItems struct {
-	IsSet    bool
-	IsSingle bool
-	Schemas  []int
-}
-
-type schemaRef struct {
-	IsSet   bool
-	Schema  int
-	URI     url.URL
-	BaseURI url.URL
-	Ptr     jsonpointer.Ptr
-}
-
-// func parseRootSchema(input map[string]interface{}) (schema, error) {
-// 	return parseSchema(true, url.URL{}, input)
-// }
-
-// func parseSubSchema(baseURI url.URL, input map[string]interface{}) (schema, error) {
-// 	return parseSchema(false, baseURI, input)
-// }
-
 type parser struct {
 	registry *registry
 	baseURI  url.URL
@@ -151,6 +94,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.Ref.URI = *uri
 		s.Ref.BaseURI = refBaseURI
 		s.Ref.Ptr = ptr
+	}
+
+	notValue, ok := input["not"]
+	if ok {
+		switch not := notValue.(type) {
+		case map[string]interface{}:
+			p.Push("not")
+
+			subSchema, err := p.Parse(not)
+			if err != nil {
+				return -1, err
+			}
+
+			s.Not.IsSet = true
+			s.Not.Schema = subSchema
+
+			p.Pop()
+		default:
+			return -1, schemaNotObject()
+		}
 	}
 
 	typeValue, ok := input["type"]

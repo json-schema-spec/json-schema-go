@@ -114,21 +114,12 @@ func (v *Validator) seal() ([]url.URL, error) {
 // Validator.
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
 	id := url.URL{}
-	vm := vm{
-		registry: v.registry,
-		stack: stack{
-			instance: []string{},
-			schemas:  []schemaStack{},
-		},
-		errors: []ValidationError{},
-	}
+	vm := newVM(v.registry)
 
-	err := vm.exec(id, instance)
+	err := vm.Exec(id, instance)
 	if err != nil {
 		return ValidationResult{}, err
 	}
 
-	return ValidationResult{
-		Errors: vm.errors,
-	}, nil
+	return vm.ValidationResult(), nil
 }

@@ -16,7 +16,12 @@ type vm struct {
 	stack stack
 
 	// errors holds all the errors to be produced
-	errors []ValidationError
+	errors vmErrors
+}
+
+type vmErrors struct {
+	hasErrors bool
+	errors    []ValidationError
 }
 
 // stack keeps track of where we are in an instance and schema. It is meant to
@@ -44,7 +49,27 @@ type schemaStack struct {
 	tokens []string
 }
 
-func (vm *vm) exec(uri url.URL, instance interface{}) error {
+func newVM(registry registry) vm {
+	return vm{
+		registry: registry,
+		stack: stack{
+			instance: []string{},
+			schemas:  []schemaStack{},
+		},
+		errors: vmErrors{
+			hasErrors: false,
+			errors:    []ValidationError{},
+		},
+	}
+}
+
+func (vm *vm) ValidationResult() ValidationResult {
+	return ValidationResult{
+		Errors: vm.errors.errors,
+	}
+}
+
+func (vm *vm) Exec(uri url.URL, instance interface{}) error {
 	schema, ok := vm.registry.Get(uri)
 	if !ok {
 		// TODO custom error types
@@ -72,6 +97,26 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		vm.pushNewSchema(schema.Ref.BaseURI, schemaTokens)
 		vm.execSchema(refSchema, instance)
 		vm.popSchema()
+	}
+
+	if schema.Not.IsSet {
+		notSchema := vm.registry.GetIndex(schema.Not.Schema)
+
+		prevErrors := vm.errors
+		vm.errors = vmErrors{
+			hasErrors: false,
+			errors:    []ValidationError{},
+		}
+
+		vm.execSchema(notSchema, instance)
+		notErrors := vm.errors
+		vm.errors = prevErrors
+
+		if !notErrors.hasErrors {
+			vm.pushSchemaToken("not")
+			vm.reportError()
+			vm.popSchemaToken()
+		}
 	}
 
 	switch val := instance.(type) {
@@ -188,7 +233,8 @@ func (vm *vm) reportError() {
 	copy(instancePath, vm.stack.instance)
 	copy(schemaPath, schemaStack.tokens)
 
-	vm.errors = append(vm.errors, ValidationError{
+	vm.errors.hasErrors = true
+	vm.errors.errors = append(vm.errors.errors, ValidationError{
 		InstancePath: jsonpointer.Ptr{Tokens: instancePath},
 		SchemaPath:   jsonpointer.Ptr{Tokens: schemaPath},
 		URI:          schemaStack.id,

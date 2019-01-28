@@ -1,0 +1,151 @@
+[
+  {
+    "name": "negating a type validation",
+    "registry": [],
+    "schema": {
+      "not": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      },
+      {
+        "instance": true,
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": []
+      },
+      {
+        "instance": 3,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      }
+    ]
+  },
+  {
+    "name": "negating a negation",
+    "registry": [],
+    "schema": {
+      "not": {
+        "not": {
+          "type": "null"
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": true,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      },
+      {
+        "instance": 3,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/not"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "negating a cross-reference",
+    "registry": [],
+    "schema": {
+      "items": {
+        "not": {
+          "$ref": "#"
+        }
+      },
+      "type": "array"
+    },
+    "instances": [
+      {
+        "instance": [
+          null,
+          1,
+          "a"
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          [],
+          "a"
+        ],
+        "errors": [
+          {
+            "instancePath": "/0",
+            "schemaPath": "/items/not"
+          }
+        ]
+      }
+    ]
+  }
+]
