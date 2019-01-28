@@ -101,8 +101,7 @@ func TestValidatorSeal(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			validator := NewValidator(tt.schemas)
-			undefinedURIs, err := validator.Seal()
+			_, undefinedURIs, err := NewValidator(tt.schemas)
 
 			assert.Equal(t, tt.undefinedURIs, undefinedURIs)
 			if tt.err == "" {
