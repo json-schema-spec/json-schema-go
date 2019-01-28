@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/segmentio/errors-go"
@@ -9,15 +10,17 @@ import (
 
 func TestValidatorSeal(t *testing.T) {
 	testCases := []struct {
-		name    string
-		schemas []map[string]interface{}
-		err     string
+		name          string
+		schemas       []map[string]interface{}
+		undefinedURIs []url.URL
+		err           string
 	}{
 		{
 			"empty object",
 			[]map[string]interface{}{
 				map[string]interface{}{},
 			},
+			nil,
 			"",
 		},
 		{
@@ -27,6 +30,7 @@ func TestValidatorSeal(t *testing.T) {
 					"type": 3,
 				},
 			},
+			nil,
 			"InvalidTypeValue",
 		},
 		{
@@ -36,6 +40,7 @@ func TestValidatorSeal(t *testing.T) {
 					"type": "invalid",
 				},
 			},
+			nil,
 			"InvalidTypeValue",
 		},
 		{
@@ -45,6 +50,7 @@ func TestValidatorSeal(t *testing.T) {
 					"items": "foo",
 				},
 			},
+			nil,
 			"SchemaNotObject",
 		},
 		{
@@ -54,6 +60,7 @@ func TestValidatorSeal(t *testing.T) {
 					"items": []interface{}{},
 				},
 			},
+			nil,
 			"",
 		},
 		{
@@ -65,7 +72,30 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			"SchemaNotObject",
+		},
+		{
+			"references to non-existent URIs",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"$ref": "http://example.com/1",
+					"items": []interface{}{
+						map[string]interface{}{
+							"$ref": "http://example.com/2",
+						},
+						map[string]interface{}{
+							"$ref": "http://example.com/3",
+						},
+					},
+				},
+			},
+			[]url.URL{
+				url.URL{Scheme: "http", Host: "example.com", Path: "/2"},
+				url.URL{Scheme: "http", Host: "example.com", Path: "/3"},
+				url.URL{Scheme: "http", Host: "example.com", Path: "/1"},
+			},
+			"URINotDefined",
 		},
 	}
 
@@ -76,7 +106,9 @@ func TestValidatorSeal(t *testing.T) {
 				validator.Register(s)
 			}
 
-			_, err := validator.Seal()
+			undefinedURIs, err := validator.Seal()
+
+			assert.Equal(t, tt.undefinedURIs, undefinedURIs)
 			if tt.err == "" {
 				assert.Equal(t, nil, err)
 			} else {

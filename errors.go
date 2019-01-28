@@ -46,6 +46,12 @@ func (e *Error) SchemaNotObject() bool {
 	return e.schemaNotObject
 }
 
+// URINotDefined is whether an Error indicates a schema referred to a URI
+// unknown to the validator.
+func (e *Error) URINotDefined() bool {
+	return e.uriNotDefined
+}
+
 // Error satisfies the error interface.
 func (e *Error) Error() string {
 	if e.InvalidTypeValue() {

@@ -50,7 +50,7 @@ func (v *Validator) Seal() ([]url.URL, error) {
 	for i, schema := range v.schemas {
 		parsed, err := parseRootSchema(&registry, schema)
 		if err != nil {
-			return []url.URL{}, errors.Wrapf(err, "errors parsing schema %d", i)
+			return nil, errors.Wrapf(err, "errors parsing schema %d", i)
 		}
 
 		rawSchemas[parsed.ID] = schema
@@ -67,17 +67,17 @@ func (v *Validator) Seal() ([]url.URL, error) {
 			if rawSchema, ok := rawSchemas[baseURI]; ok {
 				ptr, err := jsonpointer.New(uri.Fragment)
 				if err != nil {
-					return []url.URL{}, err
+					return nil, err
 				}
 
 				rawRefSchema, err := ptr.Eval(rawSchema)
 				if err != nil {
-					return []url.URL{}, err
+					return nil, err
 				}
 
 				refSchemaObject, ok := (*rawRefSchema).(map[string]interface{})
 				if !ok {
-					return []url.URL{}, schemaNotObject()
+					return nil, schemaNotObject()
 				}
 
 				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, refSchemaObject)
