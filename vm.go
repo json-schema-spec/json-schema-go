@@ -101,21 +101,35 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 
 	if schema.Not.IsSet {
 		notSchema := vm.registry.GetIndex(schema.Not.Schema)
+		notErrors := vm.psuedoExec(notSchema, instance)
 
-		prevErrors := vm.errors
-		vm.errors = vmErrors{
-			hasErrors: false,
-			errors:    []ValidationError{},
-		}
-
-		vm.execSchema(notSchema, instance)
-		notErrors := vm.errors
-		vm.errors = prevErrors
-
-		if !notErrors.hasErrors {
+		if !notErrors {
 			vm.pushSchemaToken("not")
 			vm.reportError()
 			vm.popSchemaToken()
+		}
+	}
+
+	if schema.If.IsSet {
+		ifSchema := vm.registry.GetIndex(schema.If.Schema)
+		ifErrors := vm.psuedoExec(ifSchema, instance)
+
+		if !ifErrors {
+			if schema.Then.IsSet {
+				thenSchema := vm.registry.GetIndex(schema.Then.Schema)
+
+				vm.pushSchemaToken("then")
+				vm.execSchema(thenSchema, instance)
+				vm.popSchemaToken()
+			}
+		} else {
+			if schema.Else.IsSet {
+				elseSchema := vm.registry.GetIndex(schema.Else.Schema)
+
+				vm.pushSchemaToken("else")
+				vm.execSchema(elseSchema, instance)
+				vm.popSchemaToken()
+			}
 		}
 	}
 
@@ -194,6 +208,23 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		// TODO a better error here
 		panic("unexpected non-json input")
 	}
+}
+
+// psuedoExec determines whether a given schema accepts an instance, with the
+// guarantee that the vm exits this function in the same state it was in when
+// the function was called.
+func (vm *vm) psuedoExec(schema schema, instance interface{}) bool {
+	prevErrors := vm.errors
+	vm.errors = vmErrors{
+		hasErrors: false,
+		errors:    []ValidationError{},
+	}
+
+	vm.execSchema(schema, instance)
+	pseudoErrors := vm.errors
+	vm.errors = prevErrors
+
+	return pseudoErrors.hasErrors
 }
 
 func (vm *vm) pushNewSchema(id url.URL, tokens []string) {

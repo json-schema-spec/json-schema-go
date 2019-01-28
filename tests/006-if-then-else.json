@@ -1,0 +1,140 @@
+[
+  {
+    "name": "exercising both branches of if-then-else",
+    "registry": [],
+    "schema": {
+      "if": {
+        "type": "array"
+      },
+      "then": {
+        "items": {
+          "type": "null"
+        }
+      },
+      "else": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": [
+          null,
+          null,
+          null
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo"
+        ],
+        "errors": [
+          {
+            "instancePath": "/1",
+            "schemaPath": "/then/items/type"
+          }
+        ]
+      },
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/else/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "then ignored if absent",
+    "registry": [],
+    "schema": {
+      "if": {
+        "type": "array"
+      },
+      "else": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": [
+          null,
+          null,
+          null
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo"
+        ],
+        "errors": []
+      },
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/else/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "else ignored if absent",
+    "registry": [],
+    "schema": {
+      "if": {
+        "type": "array"
+      },
+      "then": {
+        "items": {
+          "type": "null"
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": [
+          null,
+          null,
+          null
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo"
+        ],
+        "errors": [
+          {
+            "instancePath": "/1",
+            "schemaPath": "/then/items/type"
+          }
+        ]
+      },
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": "foo",
+        "errors": []
+      }
+    ]
+  }
+]

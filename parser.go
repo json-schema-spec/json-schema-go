@@ -116,6 +116,66 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		}
 	}
 
+	ifValue, ok := input["if"]
+	if ok {
+		switch ifx := ifValue.(type) {
+		case map[string]interface{}:
+			p.Push("if")
+
+			subSchema, err := p.Parse(ifx)
+			if err != nil {
+				return -1, err
+			}
+
+			s.If.IsSet = true
+			s.If.Schema = subSchema
+
+			p.Pop()
+		default:
+			return -1, schemaNotObject()
+		}
+	}
+
+	thenValue, ok := input["then"]
+	if ok {
+		switch then := thenValue.(type) {
+		case map[string]interface{}:
+			p.Push("then")
+
+			subSchema, err := p.Parse(then)
+			if err != nil {
+				return -1, err
+			}
+
+			s.Then.IsSet = true
+			s.Then.Schema = subSchema
+
+			p.Pop()
+		default:
+			return -1, schemaNotObject()
+		}
+	}
+
+	elseValue, ok := input["else"]
+	if ok {
+		switch elsex := elseValue.(type) {
+		case map[string]interface{}:
+			p.Push("else")
+
+			subSchema, err := p.Parse(elsex)
+			if err != nil {
+				return -1, err
+			}
+
+			s.Else.IsSet = true
+			s.Else.Schema = subSchema
+
+			p.Pop()
+		default:
+			return -1, schemaNotObject()
+		}
+	}
+
 	typeValue, ok := input["type"]
 	if ok {
 		switch typ := typeValue.(type) {

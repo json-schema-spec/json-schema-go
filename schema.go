@@ -10,11 +10,29 @@ type schema struct {
 	ID    url.URL
 	Ref   schemaRef
 	Not   schemaNot
+	If    schemaIf
+	Then  schemaThen
+	Else  schemaElse
 	Type  schemaType
 	Items schemaItems
 }
 
 type schemaNot struct {
+	IsSet  bool
+	Schema int
+}
+
+type schemaIf struct {
+	IsSet  bool
+	Schema int
+}
+
+type schemaThen struct {
+	IsSet  bool
+	Schema int
+}
+
+type schemaElse struct {
 	IsSet  bool
 	Schema int
 }
