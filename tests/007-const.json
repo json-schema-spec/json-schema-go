@@ -1,0 +1,30 @@
+[
+  {
+    "name": "value equality",
+    "registry": [],
+    "schema": {
+      "const": {
+        "foo": "bar",
+        "3.14": 3.14
+      }
+    },
+    "instances": [
+      {
+        "instance": {
+          "foo": "bar",
+          "3.14": 3.14
+        },
+        "errors": []
+      },
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/const"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -15,6 +15,7 @@ type schema struct {
 	Else  schemaElse
 	Type  schemaType
 	Items schemaItems
+	Const schemaConst
 }
 
 type schemaNot struct {
@@ -77,4 +78,9 @@ type schemaItems struct {
 	IsSet    bool
 	IsSingle bool
 	Schemas  []int
+}
+
+type schemaConst struct {
+	IsSet bool
+	Value interface{}
 }

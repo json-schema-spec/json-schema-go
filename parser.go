@@ -257,6 +257,12 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		}
 	}
 
+	constValue, ok := input["const"]
+	if ok {
+		s.Const.IsSet = true
+		s.Const.Value = constValue
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

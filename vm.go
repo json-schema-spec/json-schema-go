@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/url"
+	"reflect"
 	"strconv"
 
 	"github.com/ucarion/json-pointer"
@@ -130,6 +131,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				vm.execSchema(elseSchema, instance)
 				vm.popSchemaToken()
 			}
+		}
+	}
+
+	if schema.Const.IsSet {
+		if !reflect.DeepEqual(instance, schema.Const.Value) {
+			vm.pushSchemaToken("const")
+			vm.reportError()
+			vm.popSchemaToken()
 		}
 	}
 
