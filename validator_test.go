@@ -87,12 +87,16 @@ func TestValidatorSeal(t *testing.T) {
 						map[string]interface{}{
 							"$ref": "http://example.com/3",
 						},
+						map[string]interface{}{
+							"$ref": "http://example.com/4#/fragment",
+						},
 					},
 				},
 			},
 			[]url.URL{
 				url.URL{Scheme: "http", Host: "example.com", Path: "/2"},
 				url.URL{Scheme: "http", Host: "example.com", Path: "/3"},
+				url.URL{Scheme: "http", Host: "example.com", Path: "/4"},
 				url.URL{Scheme: "http", Host: "example.com", Path: "/1"},
 			},
 			"URINotDefined",
