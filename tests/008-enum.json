@@ -1,0 +1,94 @@
+[
+  {
+    "name": "value membership",
+    "registry": [],
+    "schema": {
+      "enum": [
+        null,
+        {
+          "foo": "bar"
+        },
+        {
+          "foo": "bar"
+        },
+        3.14
+      ]
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": "bar"
+        },
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": "baz"
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/enum"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "empty enum rejects all inputs",
+    "registry": [],
+    "schema": {
+      "enum": []
+    },
+    "instances": [
+      {
+        "instance": null,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/enum"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "foo": "bar"
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/enum"
+          }
+        ]
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/enum"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "foo": "baz"
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/enum"
+          }
+        ]
+      }
+    ]
+  }
+]

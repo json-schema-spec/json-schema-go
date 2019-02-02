@@ -101,6 +101,16 @@ func TestValidatorSeal(t *testing.T) {
 			},
 			"URINotDefined",
 		},
+		{
+			"non-array enum element",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"enum": "foobar",
+				},
+			},
+			nil,
+			"InvalidArrayValue",
+		},
 	}
 
 	for _, tt := range testCases {

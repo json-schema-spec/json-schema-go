@@ -16,6 +16,7 @@ type schema struct {
 	Type  schemaType
 	Items schemaItems
 	Const schemaConst
+	Enum  schemaEnum
 }
 
 type schemaNot struct {
@@ -83,4 +84,9 @@ type schemaItems struct {
 type schemaConst struct {
 	IsSet bool
 	Value interface{}
+}
+
+type schemaEnum struct {
+	IsSet  bool
+	Values []interface{}
 }

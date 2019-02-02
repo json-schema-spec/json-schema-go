@@ -263,6 +263,17 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.Const.Value = constValue
 	}
 
+	enumValue, ok := input["enum"]
+	if ok {
+		enumArray, ok := enumValue.([]interface{})
+		if !ok {
+			return -1, invalidArrayValue()
+		}
+
+		s.Enum.IsSet = true
+		s.Enum.Values = enumArray
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

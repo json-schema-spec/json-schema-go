@@ -142,6 +142,22 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		}
 	}
 
+	if schema.Enum.IsSet {
+		enumOk := false
+		for _, value := range schema.Enum.Values {
+			if reflect.DeepEqual(instance, value) {
+				enumOk = true
+				break
+			}
+		}
+
+		if !enumOk {
+			vm.pushSchemaToken("enum")
+			vm.reportError()
+			vm.popSchemaToken()
+		}
+	}
+
 	switch val := instance.(type) {
 	case nil:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeNull) {
