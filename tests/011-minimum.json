@@ -1,0 +1,32 @@
+[
+  {
+    "name": "floating point minimum",
+    "registry": [],
+    "schema": {
+      "minimum": 3.14
+    },
+    "instances": [
+      {
+        "instance": "not a number",
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": []
+      },
+      {
+        "instance": 6.28,
+        "errors": []
+      },
+      {
+        "instance": 0,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/minimum"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -296,6 +296,17 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.Maximum.Value = maximumNumber
 	}
 
+	minimumValue, ok := input["minimum"]
+	if ok {
+		minimumNumber, ok := minimumValue.(float64)
+		if !ok {
+			return -1, invalidNumberValue()
+		}
+
+		s.Minimum.IsSet = true
+		s.Minimum.Value = minimumNumber
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

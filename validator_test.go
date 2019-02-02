@@ -131,6 +131,16 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNumberValue",
 		},
+		{
+			"non-number minimum value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"minimum": "foobar",
+				},
+			},
+			nil,
+			"InvalidNumberValue",
+		},
 	}
 
 	for _, tt := range testCases {

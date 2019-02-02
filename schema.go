@@ -19,6 +19,7 @@ type schema struct {
 	Enum       schemaEnum
 	MultipleOf schemaMultipleOf
 	Maximum    schemaMaximum
+	Minimum    schemaMinimum
 }
 
 type schemaNot struct {
@@ -99,6 +100,11 @@ type schemaMultipleOf struct {
 }
 
 type schemaMaximum struct {
+	IsSet bool
+	Value float64
+}
+
+type schemaMinimum struct {
 	IsSet bool
 	Value float64
 }
