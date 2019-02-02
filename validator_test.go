@@ -102,7 +102,7 @@ func TestValidatorSeal(t *testing.T) {
 			"URINotDefined",
 		},
 		{
-			"non-array enum element",
+			"non-array enum value",
 			[]map[string]interface{}{
 				map[string]interface{}{
 					"enum": "foobar",
@@ -110,6 +110,16 @@ func TestValidatorSeal(t *testing.T) {
 			},
 			nil,
 			"InvalidArrayValue",
+		},
+		{
+			"non-number multipleOf value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"multipleOf": "foobar",
+				},
+			},
+			nil,
+			"InvalidNumberValue",
 		},
 	}
 

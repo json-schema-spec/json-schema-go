@@ -3,13 +3,14 @@ package jsonschema
 // Error represents a union of errors that can arise from parsing and validating
 // JSON Schemas.
 type Error struct {
-	invalidTypeValue  bool
-	schemaNotObject   bool
-	idNotString       bool
-	invalidURI        bool
-	refNotString      bool
-	uriNotDefined     bool
-	invalidArrayValue bool
+	invalidTypeValue   bool
+	schemaNotObject    bool
+	idNotString        bool
+	invalidURI         bool
+	refNotString       bool
+	uriNotDefined      bool
+	invalidArrayValue  bool
+	invalidNumberValue bool
 }
 
 func invalidTypeValue() *Error {
@@ -40,6 +41,10 @@ func invalidArrayValue() *Error {
 	return &Error{invalidArrayValue: true}
 }
 
+func invalidNumberValue() *Error {
+	return &Error{invalidNumberValue: true}
+}
+
 // InvalidTypeValue is whether an Error indicates a "type" keyword value wasn't
 // in a valid format.
 func (e *Error) InvalidTypeValue() bool {
@@ -61,6 +66,12 @@ func (e *Error) URINotDefined() bool {
 // expected to be an array, but was not.
 func (e *Error) InvalidArrayValue() bool {
 	return e.invalidArrayValue
+}
+
+// InvalidNumberValue is whether an Error indicates a keyword value which was
+// expected to be a number, but was not.
+func (e *Error) InvalidNumberValue() bool {
+	return e.invalidNumberValue
 }
 
 // Error satisfies the error interface.

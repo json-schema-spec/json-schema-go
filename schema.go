@@ -7,16 +7,17 @@ import (
 )
 
 type schema struct {
-	ID    url.URL
-	Ref   schemaRef
-	Not   schemaNot
-	If    schemaIf
-	Then  schemaThen
-	Else  schemaElse
-	Type  schemaType
-	Items schemaItems
-	Const schemaConst
-	Enum  schemaEnum
+	ID         url.URL
+	Ref        schemaRef
+	Not        schemaNot
+	If         schemaIf
+	Then       schemaThen
+	Else       schemaElse
+	Type       schemaType
+	Items      schemaItems
+	Const      schemaConst
+	Enum       schemaEnum
+	MultipleOf schemaMultipleOf
 }
 
 type schemaNot struct {
@@ -89,4 +90,9 @@ type schemaConst struct {
 type schemaEnum struct {
 	IsSet  bool
 	Values []interface{}
+}
+
+type schemaMultipleOf struct {
+	IsSet bool
+	Value float64
 }

@@ -274,6 +274,17 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.Enum.Values = enumArray
 	}
 
+	multipleOfValue, ok := input["multipleOf"]
+	if ok {
+		multipleOfNumber, ok := multipleOfValue.(float64)
+		if !ok {
+			return -1, invalidNumberValue()
+		}
+
+		s.MultipleOf.IsSet = true
+		s.MultipleOf.Value = multipleOfNumber
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

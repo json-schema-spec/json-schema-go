@@ -10,6 +10,8 @@ import (
 	"github.com/ucarion/json-pointer"
 )
 
+const epsilon = 1e-3
+
 type vm struct {
 	registry registry
 
@@ -180,6 +182,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 
 			if !typeOk && !schema.Type.contains(jsonTypeNumber) {
 				vm.pushSchemaToken("type")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
+
+		if schema.MultipleOf.IsSet {
+			if math.Abs(math.Mod(val, schema.MultipleOf.Value)) > epsilon {
+				vm.pushSchemaToken("multipleOf")
 				vm.reportError()
 				vm.popSchemaToken()
 			}
