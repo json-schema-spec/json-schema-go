@@ -141,6 +141,16 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNumberValue",
 		},
+		{
+			"non-number exclusiveMaximum value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"exclusiveMaximum": "foobar",
+				},
+			},
+			nil,
+			"InvalidNumberValue",
+		},
 	}
 
 	for _, tt := range testCases {

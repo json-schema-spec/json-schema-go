@@ -7,19 +7,20 @@ import (
 )
 
 type schema struct {
-	ID         url.URL
-	Ref        schemaRef
-	Not        schemaNot
-	If         schemaIf
-	Then       schemaThen
-	Else       schemaElse
-	Type       schemaType
-	Items      schemaItems
-	Const      schemaConst
-	Enum       schemaEnum
-	MultipleOf schemaMultipleOf
-	Maximum    schemaMaximum
-	Minimum    schemaMinimum
+	ID               url.URL
+	Ref              schemaRef
+	Not              schemaNot
+	If               schemaIf
+	Then             schemaThen
+	Else             schemaElse
+	Type             schemaType
+	Items            schemaItems
+	Const            schemaConst
+	Enum             schemaEnum
+	MultipleOf       schemaMultipleOf
+	Maximum          schemaMaximum
+	Minimum          schemaMinimum
+	ExclusiveMaximum schemaExclusiveMaximum
 }
 
 type schemaNot struct {
@@ -105,6 +106,11 @@ type schemaMaximum struct {
 }
 
 type schemaMinimum struct {
+	IsSet bool
+	Value float64
+}
+
+type schemaExclusiveMaximum struct {
 	IsSet bool
 	Value float64
 }
