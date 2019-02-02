@@ -318,6 +318,17 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.ExclusiveMaximum.Value = exclusiveMaximumNumber
 	}
 
+	exclusiveMinimumValue, ok := input["exclusiveMinimum"]
+	if ok {
+		exclusiveMinimumNumber, ok := exclusiveMinimumValue.(float64)
+		if !ok {
+			return -1, invalidNumberValue()
+		}
+
+		s.ExclusiveMinimum.IsSet = true
+		s.ExclusiveMinimum.Value = exclusiveMinimumNumber
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

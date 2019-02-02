@@ -21,6 +21,7 @@ type schema struct {
 	Maximum          schemaMaximum
 	Minimum          schemaMinimum
 	ExclusiveMaximum schemaExclusiveMaximum
+	ExclusiveMinimum schemaExclusiveMinimum
 }
 
 type schemaNot struct {
@@ -111,6 +112,11 @@ type schemaMinimum struct {
 }
 
 type schemaExclusiveMaximum struct {
+	IsSet bool
+	Value float64
+}
+
+type schemaExclusiveMinimum struct {
 	IsSet bool
 	Value float64
 }

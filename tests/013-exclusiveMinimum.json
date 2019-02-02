@@ -1,0 +1,37 @@
+[
+  {
+    "name": "floating point exclusive minimum",
+    "registry": [],
+    "schema": {
+      "exclusiveMinimum": 3.14
+    },
+    "instances": [
+      {
+        "instance": "not a number",
+        "errors": []
+      },
+      {
+        "instance": 6.28,
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/exclusiveMinimum"
+          }
+        ]
+      },
+      {
+        "instance": 0,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/exclusiveMinimum"
+          }
+        ]
+      }
+    ]
+  }
+]

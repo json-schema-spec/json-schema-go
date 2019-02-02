@@ -218,6 +218,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				vm.popSchemaToken()
 			}
 		}
+
+		if schema.ExclusiveMinimum.IsSet {
+			if val < schema.ExclusiveMinimum.Value+epsilon {
+				vm.pushSchemaToken("exclusiveMinimum")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
 	case string:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeString) {
 			vm.pushSchemaToken("type")
