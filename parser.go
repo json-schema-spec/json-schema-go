@@ -285,6 +285,17 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.MultipleOf.Value = multipleOfNumber
 	}
 
+	maximumValue, ok := input["maximum"]
+	if ok {
+		maximumNumber, ok := maximumValue.(float64)
+		if !ok {
+			return -1, invalidNumberValue()
+		}
+
+		s.Maximum.IsSet = true
+		s.Maximum.Value = maximumNumber
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

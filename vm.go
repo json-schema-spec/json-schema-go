@@ -194,6 +194,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				vm.popSchemaToken()
 			}
 		}
+
+		if schema.Maximum.IsSet {
+			if val > schema.Maximum.Value {
+				vm.pushSchemaToken("maximum")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
 	case string:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeString) {
 			vm.pushSchemaToken("type")

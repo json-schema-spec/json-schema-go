@@ -1,0 +1,36 @@
+[
+  {
+    "name": "floating point maximum",
+    "registry": [],
+    "schema": {
+      "maximum": 3.14
+    },
+    "instances": [
+      {
+        "instance": "not a number",
+        "errors": []
+      },
+      {
+        "instance": 3.14,
+        "errors": []
+      },
+      {
+        "instance": -3.14,
+        "errors": []
+      },
+      {
+        "instance": 0,
+        "errors": []
+      },
+      {
+        "instance": 6.28,
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maximum"
+          }
+        ]
+      }
+    ]
+  }
+]
