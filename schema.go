@@ -28,6 +28,7 @@ type schema struct {
 	MinLength        schemaMinLength
 	Pattern          schemaPattern
 	MaxItems         schemaMaxItems
+	MinItems         schemaMinItems
 }
 
 type schemaNot struct {
@@ -148,6 +149,11 @@ type schemaAdditionalItems struct {
 }
 
 type schemaMaxItems struct {
+	IsSet bool
+	Value int
+}
+
+type schemaMinItems struct {
 	IsSet bool
 	Value int
 }

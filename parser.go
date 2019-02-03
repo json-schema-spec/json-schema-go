@@ -427,6 +427,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.MaxItems.Value = int(maxItemsInt)
 	}
 
+	minItemsValue, ok := input["minItems"]
+	if ok {
+		minItemsNumber, ok := minItemsValue.(float64)
+		if !ok {
+			return -1, invalidNaturalValue()
+		}
+
+		minItemsInt, rem := math.Modf(minItemsNumber)
+		if rem > epsilon {
+			return -1, invalidNaturalValue()
+		}
+
+		if minItemsInt < 0 {
+			return -1, invalidNaturalValue()
+		}
+
+		s.MinItems.IsSet = true
+		s.MinItems.Value = int(minItemsInt)
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

@@ -272,6 +272,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			}
 		}
 
+		if schema.MinItems.IsSet {
+			if len(val) < schema.MinItems.Value {
+				vm.pushSchemaToken("minItems")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
+
 		if schema.Items.IsSet {
 			if schema.Items.IsSingle {
 				vm.pushSchemaToken("items")

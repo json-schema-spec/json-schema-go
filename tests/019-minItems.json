@@ -1,0 +1,57 @@
+[
+  {
+    "name": "positive min array length",
+    "registry": [],
+    "schema": {
+      "minItems": 3
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/minItems"
+          }
+        ]
+      },
+      {
+        "instance": [null, null, null],
+        "errors": []
+      },
+      {
+        "instance": [null, null, null, null, null],
+        "errors": []
+      }
+    ]
+  },
+  {
+    "name": "zero min array length accepts all arrays",
+    "registry": [],
+    "schema": {
+      "minItems": 0
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": [null, null, null],
+        "errors": []
+      },
+      {
+        "instance": [null, null, null, null, null],
+        "errors": []
+      }
+    ]
+  }
+]
