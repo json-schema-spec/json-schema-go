@@ -368,6 +368,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				vm.popSchemaToken()
 			}
 		}
+
+		if schema.MinProperties.IsSet {
+			if len(val) < schema.MinProperties.Value {
+				vm.pushSchemaToken("minProperties")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
 	default:
 		// TODO a better error here
 		panic("unexpected non-json input")

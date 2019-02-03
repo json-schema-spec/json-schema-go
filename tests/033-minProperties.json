@@ -1,0 +1,77 @@
+[
+  {
+    "name": "positive min object properties",
+    "registry": [],
+    "schema": {
+      "minProperties": 3
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/minProperties"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null,
+          "d": null,
+          "e": null
+        },
+        "errors": []
+      }
+    ]
+  },
+  {
+    "name": "zero min object properties accepts all nonempty arrays",
+    "registry": [],
+    "schema": {
+      "minProperties": 0
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null,
+          "d": null,
+          "e": null
+        },
+        "errors": []
+      }
+    ]
+  }
+]

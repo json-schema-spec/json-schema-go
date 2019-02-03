@@ -363,6 +363,36 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNaturalValue",
 		},
+		{
+			"non-number minProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"minProperties": "foobar",
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-int minProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"minProperties": 3.14,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-positive minProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"minProperties": -2.0,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
 	}
 
 	for _, tt := range testCases {

@@ -32,6 +32,7 @@ type schema struct {
 	UniqueItems      schemaUniqueItems
 	Contains         schemaContains
 	MaxProperties    schemaMaxProperties
+	MinProperties    schemaMinProperties
 }
 
 type schemaNot struct {
@@ -172,6 +173,11 @@ type schemaContains struct {
 }
 
 type schemaMaxProperties struct {
+	IsSet bool
+	Value int
+}
+
+type schemaMinProperties struct {
 	IsSet bool
 	Value int
 }

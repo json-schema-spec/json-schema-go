@@ -498,6 +498,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.MaxProperties.Value = int(maxPropertiesInt)
 	}
 
+	minPropertiesValue, ok := input["minProperties"]
+	if ok {
+		minPropertiesNumber, ok := minPropertiesValue.(float64)
+		if !ok {
+			return -1, invalidNaturalValue()
+		}
+
+		minPropertiesInt, rem := math.Modf(minPropertiesNumber)
+		if rem > epsilon {
+			return -1, invalidNaturalValue()
+		}
+
+		if minPropertiesInt < 0 {
+			return -1, invalidNaturalValue()
+		}
+
+		s.MinProperties.IsSet = true
+		s.MinProperties.Value = int(minPropertiesInt)
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }
