@@ -387,6 +387,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.Pattern.Value = patternRegexp
 	}
 
+	additionalItemsValue, ok := input["additionalItems"]
+	if ok {
+		additionalItemsObject, ok := additionalItemsValue.(map[string]interface{})
+		if !ok {
+			return -1, schemaNotObject()
+		}
+
+		p.Push("additionalItems")
+
+		subSchema, err := p.Parse(additionalItemsObject)
+		if err != nil {
+			return -1, err
+		}
+
+		s.AdditionalItems.IsSet = true
+		s.AdditionalItems.Schema = subSchema
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

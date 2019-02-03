@@ -288,6 +288,20 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 					vm.popSchemaToken()
 				}
 				vm.popSchemaToken()
+
+				if schema.AdditionalItems.IsSet {
+					vm.pushSchemaToken("additionalItems")
+
+					additionalItemSchema := vm.registry.GetIndex(schema.AdditionalItems.Schema)
+					for i := len(schema.Items.Schemas); i < len(val); i++ {
+						token := strconv.FormatInt(int64(i), 10)
+
+						vm.pushInstanceToken(token)
+						vm.execSchema(additionalItemSchema, val[i])
+						vm.popInstanceToken()
+					}
+					vm.popSchemaToken()
+				}
 			}
 		}
 	case map[string]interface{}:

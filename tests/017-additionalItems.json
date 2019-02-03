@@ -1,0 +1,81 @@
+[
+  {
+    "name": "validate additional items",
+    "registry": [],
+    "schema": {
+      "items": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "additionalItems": {
+        "type": "number"
+      }
+    },
+    "instances": [
+      {
+        "instance": [
+          null,
+          true,
+          null
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          true,
+          null,
+          3.14
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          true,
+          null,
+          3.14,
+          "bar",
+          3.14,
+          "baz"
+        ],
+        "errors": [
+          {
+            "instancePath": "/4",
+            "schemaPath": "/additionalItems/type"
+          },
+          {
+            "instancePath": "/6",
+            "schemaPath": "/additionalItems/type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "ignore additionalItems without items",
+    "registry": [],
+    "schema": {
+      "additionalItems": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": [
+          true,
+          3.14,
+          "foo"
+        ],
+        "errors": []
+      }
+    ]
+  }
+]

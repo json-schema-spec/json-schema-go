@@ -241,6 +241,18 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidRegexpValue",
 		},
+		{
+			"element of additionalItems not object",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"additionalItems": []interface{}{
+						"foo",
+					},
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {

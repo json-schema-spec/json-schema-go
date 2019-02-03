@@ -16,6 +16,7 @@ type schema struct {
 	Else             schemaElse
 	Type             schemaType
 	Items            schemaItems
+	AdditionalItems  schemaAdditionalItems
 	Const            schemaConst
 	Enum             schemaEnum
 	MultipleOf       schemaMultipleOf
@@ -138,4 +139,9 @@ type schemaMinLength struct {
 type schemaPattern struct {
 	IsSet bool
 	Value *regexp.Regexp
+}
+
+type schemaAdditionalItems struct {
+	IsSet  bool
+	Schema int
 }
