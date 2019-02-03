@@ -23,6 +23,7 @@ type schema struct {
 	ExclusiveMaximum schemaExclusiveMaximum
 	ExclusiveMinimum schemaExclusiveMinimum
 	MaxLength        schemaMaxLength
+	MinLength        schemaMinLength
 }
 
 type schemaNot struct {
@@ -123,6 +124,11 @@ type schemaExclusiveMinimum struct {
 }
 
 type schemaMaxLength struct {
+	IsSet bool
+	Value int
+}
+
+type schemaMinLength struct {
 	IsSet bool
 	Value int
 }

@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/ucarion/json-pointer"
 )
@@ -234,8 +235,16 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		}
 
 		if schema.MaxLength.IsSet {
-			if len(val) > schema.MaxLength.Value {
+			if utf8.RuneCountInString(val) > schema.MaxLength.Value {
 				vm.pushSchemaToken("maxLength")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
+
+		if schema.MinLength.IsSet {
+			if utf8.RuneCountInString(val) < schema.MinLength.Value {
+				vm.pushSchemaToken("minLength")
 				vm.reportError()
 				vm.popSchemaToken()
 			}

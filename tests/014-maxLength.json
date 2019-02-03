@@ -21,6 +21,14 @@
         "errors": []
       },
       {
+        "instance": "a\u0000c",
+        "errors": []
+      },
+      {
+        "instance": "a\uffffc",
+        "errors": []
+      },
+      {
         "instance": "abcde",
         "errors": [
           {
@@ -32,7 +40,7 @@
     ]
   },
   {
-    "name": "zero max string lenth rejects all nonempty strings",
+    "name": "zero max string length rejects all nonempty strings",
     "registry": [],
     "schema": {
       "maxLength": 0

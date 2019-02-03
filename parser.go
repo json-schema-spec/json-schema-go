@@ -350,6 +350,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.MaxLength.Value = int(maxLengthInt)
 	}
 
+	minLengthValue, ok := input["minLength"]
+	if ok {
+		minLengthNumber, ok := minLengthValue.(float64)
+		if !ok {
+			return -1, invalidNaturalValue()
+		}
+
+		minLengthInt, rem := math.Modf(minLengthNumber)
+		if rem > epsilon {
+			return -1, invalidNaturalValue()
+		}
+
+		if minLengthInt < 0 {
+			return -1, invalidNaturalValue()
+		}
+
+		s.MinLength.IsSet = true
+		s.MinLength.Value = int(minLengthInt)
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

@@ -1,9 +1,49 @@
 [
   {
-    "name": "positive max string length",
+    "name": "positive min string length",
     "registry": [],
     "schema": {
-      "maxLength": 3
+      "minLength": 3
+    },
+    "instances": [
+      {
+        "instance": {
+          "not": "a string"
+        },
+        "errors": []
+      },
+      {
+        "instance": "abcde",
+        "errors": []
+      },
+      {
+        "instance": "abc",
+        "errors": []
+      },
+      {
+        "instance": "a\u0000c",
+        "errors": []
+      },
+      {
+        "instance": "a\uffffc",
+        "errors": []
+      },
+      {
+        "instance": "",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/minLength"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "zero min string length accepts all strings",
+    "registry": [],
+    "schema": {
+      "minLength": 0
     },
     "instances": [
       {
@@ -22,12 +62,7 @@
       },
       {
         "instance": "abcde",
-        "errors": [
-          {
-            "instancePath": "",
-            "schemaPath": "/maxLength"
-          }
-        ]
+        "errors": []
       }
     ]
   }
