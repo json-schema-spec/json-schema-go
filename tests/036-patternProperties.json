@@ -1,0 +1,81 @@
+[
+  {
+    "name": "schemas for properties matching patterns",
+    "registry": [],
+    "schema": {
+      "patternProperties": {
+        "fo+": {
+          "type": "null"
+        },
+        "ba+r": {
+          "type": "boolean"
+        },
+        "baa+r": {
+          "type": "boolean"
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "foooo": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "foooo": null,
+          "bar": true,
+          "baaar": true
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "foooo": "null",
+          "bar": true,
+          "baaar": true
+        },
+        "errors": [
+          {
+            "instancePath": "/foooo",
+            "schemaPath": "/patternProperties/fo+/type"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "foo": null,
+          "foooo": "null",
+          "bar": true,
+          "baaar": "true"
+        },
+        "errors": [
+          {
+            "instancePath": "/baaar",
+            "schemaPath": "/patternProperties/ba+r/type"
+          },
+          {
+            "instancePath": "/baaar",
+            "schemaPath": "/patternProperties/baa+r/type"
+          },
+          {
+            "instancePath": "/foooo",
+            "schemaPath": "/patternProperties/fo+/type"
+          }
+        ]
+      }
+    ]
+  }
+]

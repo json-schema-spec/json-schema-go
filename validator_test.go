@@ -439,6 +439,40 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"SchemaNotObject",
 		},
+		{
+			"non-object patternProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"patternProperties": "foobar",
+				},
+			},
+			nil,
+			"InvalidObjectValue",
+		},
+		{
+			"non-regexp patternProperties key",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"patternProperties": map[string]interface{}{
+						"[[[": map[string]interface{}{},
+					},
+				},
+			},
+			nil,
+			"InvalidRegexpValue",
+		},
+		{
+			"non-object patternProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"patternProperties": map[string]interface{}{
+						"[[[": "foobar",
+					},
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {

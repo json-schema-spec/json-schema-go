@@ -8,33 +8,34 @@ import (
 )
 
 type schema struct {
-	ID               url.URL
-	Ref              schemaRef
-	Not              schemaNot
-	If               schemaIf
-	Then             schemaThen
-	Else             schemaElse
-	Type             schemaType
-	Items            schemaItems
-	AdditionalItems  schemaAdditionalItems
-	Const            schemaConst
-	Enum             schemaEnum
-	MultipleOf       schemaMultipleOf
-	Maximum          schemaMaximum
-	Minimum          schemaMinimum
-	ExclusiveMaximum schemaExclusiveMaximum
-	ExclusiveMinimum schemaExclusiveMinimum
-	MaxLength        schemaMaxLength
-	MinLength        schemaMinLength
-	Pattern          schemaPattern
-	MaxItems         schemaMaxItems
-	MinItems         schemaMinItems
-	UniqueItems      schemaUniqueItems
-	Contains         schemaContains
-	MaxProperties    schemaMaxProperties
-	MinProperties    schemaMinProperties
-	Required         schemaRequired
-	Properties       schemaProperties
+	ID                url.URL
+	Ref               schemaRef
+	Not               schemaNot
+	If                schemaIf
+	Then              schemaThen
+	Else              schemaElse
+	Type              schemaType
+	Items             schemaItems
+	AdditionalItems   schemaAdditionalItems
+	Const             schemaConst
+	Enum              schemaEnum
+	MultipleOf        schemaMultipleOf
+	Maximum           schemaMaximum
+	Minimum           schemaMinimum
+	ExclusiveMaximum  schemaExclusiveMaximum
+	ExclusiveMinimum  schemaExclusiveMinimum
+	MaxLength         schemaMaxLength
+	MinLength         schemaMinLength
+	Pattern           schemaPattern
+	MaxItems          schemaMaxItems
+	MinItems          schemaMinItems
+	UniqueItems       schemaUniqueItems
+	Contains          schemaContains
+	MaxProperties     schemaMaxProperties
+	MinProperties     schemaMinProperties
+	Required          schemaRequired
+	Properties        schemaProperties
+	PatternProperties schemaPatternProperties
 }
 
 type schemaNot struct {
@@ -192,4 +193,9 @@ type schemaRequired struct {
 type schemaProperties struct {
 	IsSet   bool
 	Schemas map[string]int
+}
+
+type schemaPatternProperties struct {
+	IsSet   bool
+	Schemas map[*regexp.Regexp]int
 }

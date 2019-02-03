@@ -572,6 +572,44 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		p.Pop()
 	}
 
+	patternPropertiesValue, ok := input["patternProperties"]
+	if ok {
+		patternPropertiesObject, ok := patternPropertiesValue.(map[string]interface{})
+		if !ok {
+			return -1, invalidObjectValue()
+		}
+
+		p.Push("patternProperties")
+
+		schemas := map[*regexp.Regexp]int{}
+		for property, elem := range patternPropertiesObject {
+			elemObject, ok := elem.(map[string]interface{})
+			if !ok {
+				return -1, schemaNotObject()
+			}
+
+			propertyRegexp, err := regexp.Compile(property)
+			if err != nil {
+				return -1, invalidRegexpValue()
+			}
+
+			p.Push(property)
+			subSchema, err := p.Parse(elemObject)
+			if err != nil {
+				return -1, err
+			}
+
+			schemas[propertyRegexp] = subSchema
+
+			p.Pop()
+		}
+
+		s.PatternProperties.IsSet = true
+		s.PatternProperties.Schemas = schemas
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }
