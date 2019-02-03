@@ -478,6 +478,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		p.Pop()
 	}
 
+	maxPropertiesValue, ok := input["maxProperties"]
+	if ok {
+		maxPropertiesNumber, ok := maxPropertiesValue.(float64)
+		if !ok {
+			return -1, invalidNaturalValue()
+		}
+
+		maxPropertiesInt, rem := math.Modf(maxPropertiesNumber)
+		if rem > epsilon {
+			return -1, invalidNaturalValue()
+		}
+
+		if maxPropertiesInt < 0 {
+			return -1, invalidNaturalValue()
+		}
+
+		s.MaxProperties.IsSet = true
+		s.MaxProperties.Value = int(maxPropertiesInt)
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

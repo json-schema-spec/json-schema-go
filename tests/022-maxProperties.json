@@ -1,0 +1,87 @@
+[
+  {
+    "name": "positive max object properties",
+    "registry": [],
+    "schema": {
+      "maxProperties": 3
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null,
+          "d": null,
+          "e": null
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxProperties"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "zero max array length rejects all nonempty arrays",
+    "registry": [],
+    "schema": {
+      "maxProperties": 0
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxProperties"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "a": null,
+          "b": null,
+          "c": null,
+          "d": null,
+          "e": null
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxProperties"
+          }
+        ]
+      }
+    ]
+  }
+]

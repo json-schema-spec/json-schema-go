@@ -360,6 +360,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			vm.reportError()
 			vm.popSchemaToken()
 		}
+
+		if schema.MaxProperties.IsSet {
+			if len(val) > schema.MaxProperties.Value {
+				vm.pushSchemaToken("maxProperties")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
 	default:
 		// TODO a better error here
 		panic("unexpected non-json input")

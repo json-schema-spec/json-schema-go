@@ -333,6 +333,36 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"SchemaNotObject",
 		},
+		{
+			"non-number maxProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxProperties": "foobar",
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-int maxProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxProperties": 3.14,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-positive maxProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxProperties": -2.0,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
 	}
 
 	for _, tt := range testCases {
