@@ -393,6 +393,30 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNaturalValue",
 		},
+		{
+			"non-list required value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"required": "foobar",
+				},
+			},
+			nil,
+			"InvalidPropertyList",
+		},
+		{
+			"non-string-containing list required value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"required": []interface{}{
+						"foo",
+						3,
+						"baz",
+					},
+				},
+			},
+			nil,
+			"InvalidPropertyList",
+		},
 	}
 
 	for _, tt := range testCases {

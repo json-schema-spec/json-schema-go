@@ -518,6 +518,27 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.MinProperties.Value = int(minPropertiesInt)
 	}
 
+	requiredValue, ok := input["required"]
+	if ok {
+		requiredArray, ok := requiredValue.([]interface{})
+		if !ok {
+			return -1, invalidPropertyList()
+		}
+
+		properties := []string{}
+		for _, elem := range requiredArray {
+			elemString, ok := elem.(string)
+			if !ok {
+				return -1, invalidPropertyList()
+			}
+
+			properties = append(properties, elemString)
+		}
+
+		s.Required.IsSet = true
+		s.Required.Properties = properties
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

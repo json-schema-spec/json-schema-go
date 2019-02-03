@@ -1,0 +1,79 @@
+[
+  {
+    "name": "properties that must exist in object",
+    "registry": [],
+    "schema": {
+      "required": [
+        "foo",
+        "bar"
+      ]
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "bar": null
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/required/0"
+          }
+        ]
+      },
+      {
+        "instance": {},
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/required/0"
+          },
+          {
+            "instancePath": "",
+            "schemaPath": "/required/1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "empty list of required properties accepts all objects",
+    "registry": [],
+    "schema": {
+      "required": []
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "bar": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      }
+    ]
+  }
+]
