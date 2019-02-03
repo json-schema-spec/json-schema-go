@@ -466,6 +466,19 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 
 			vm.popSchemaToken()
 		}
+
+		if schema.PropertyNames.IsSet {
+			vm.pushSchemaToken("propertyNames")
+
+			propertyNameSchema := vm.registry.GetIndex(schema.PropertyNames.Schema)
+			for key := range val {
+				vm.pushInstanceToken(key)
+				vm.execSchema(propertyNameSchema, key)
+				vm.popInstanceToken()
+			}
+
+			vm.popSchemaToken()
+		}
 	default:
 		// TODO a better error here
 		panic("unexpected non-json input")

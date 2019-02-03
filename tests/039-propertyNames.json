@@ -1,0 +1,43 @@
+[
+  {
+    "name": "schema that all properties must satify",
+    "registry": [],
+    "schema": {
+      "propertyNames": {
+        "maxLength": 3
+      }
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": null,
+          "baz": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": null,
+          "baz": null,
+          "quux": null
+        },
+        "errors": [
+          {
+            "instancePath": "/quux",
+            "schemaPath": "/propertyNames/maxLength"
+          }
+        ]
+      }
+    ]
+  }
+]

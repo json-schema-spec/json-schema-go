@@ -536,6 +536,16 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidPropertyList",
 		},
+		{
+			"non-object value of propertyNames",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"propertyNames": "foobar",
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {
