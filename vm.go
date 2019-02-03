@@ -249,6 +249,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				vm.popSchemaToken()
 			}
 		}
+
+		if schema.Pattern.IsSet {
+			if !schema.Pattern.Value.MatchString(val) {
+				vm.pushSchemaToken("pattern")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
 	case []interface{}:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeArray) {
 			vm.pushSchemaToken("type")

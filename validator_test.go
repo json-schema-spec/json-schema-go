@@ -221,6 +221,26 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNaturalValue",
 		},
+		{
+			"non-string pattern value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"pattern": 3.14,
+				},
+			},
+			nil,
+			"InvalidRegexpValue",
+		},
+		{
+			"non-regexp pattern value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"pattern": "[[[",
+				},
+			},
+			nil,
+			"InvalidRegexpValue",
+		},
 	}
 
 	for _, tt := range testCases {

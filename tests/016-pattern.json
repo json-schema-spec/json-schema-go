@@ -1,0 +1,38 @@
+[
+  {
+    "name": "unanchored regular expression",
+    "registry": [],
+    "schema": {
+      "pattern": "fo+ba[rz]"
+    },
+    "instances": [
+      {
+        "instance": {
+          "not": "a string"
+        },
+        "errors": []
+      },
+      {
+        "instance": "foobar",
+        "errors": []
+      },
+      {
+        "instance": "xxxxxfoobarxxxxx",
+        "errors": []
+      },
+      {
+        "instance": "fobaz",
+        "errors": []
+      },
+      {
+        "instance": "foobaq",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/pattern"
+          }
+        ]
+      }
+    ]
+  }
+]

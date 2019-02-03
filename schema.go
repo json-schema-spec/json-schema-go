@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"net/url"
+	"regexp"
 
 	"github.com/ucarion/json-pointer"
 )
@@ -24,6 +25,7 @@ type schema struct {
 	ExclusiveMinimum schemaExclusiveMinimum
 	MaxLength        schemaMaxLength
 	MinLength        schemaMinLength
+	Pattern          schemaPattern
 }
 
 type schemaNot struct {
@@ -131,4 +133,9 @@ type schemaMaxLength struct {
 type schemaMinLength struct {
 	IsSet bool
 	Value int
+}
+
+type schemaPattern struct {
+	IsSet bool
+	Value *regexp.Regexp
 }

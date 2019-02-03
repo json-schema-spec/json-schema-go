@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"net/url"
+	"regexp"
 	"strconv"
 
 	"github.com/ucarion/json-pointer"
@@ -368,6 +369,22 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 		s.MinLength.IsSet = true
 		s.MinLength.Value = int(minLengthInt)
+	}
+
+	patternValue, ok := input["pattern"]
+	if ok {
+		patternString, ok := patternValue.(string)
+		if !ok {
+			return -1, invalidRegexpValue()
+		}
+
+		patternRegexp, err := regexp.Compile(patternString)
+		if err != nil {
+			return -1, invalidRegexpValue()
+		}
+
+		s.Pattern.IsSet = true
+		s.Pattern.Value = patternRegexp
 	}
 
 	index := p.registry.Insert(p.URI(), s)
