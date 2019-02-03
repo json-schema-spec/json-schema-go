@@ -630,6 +630,58 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		p.Pop()
 	}
 
+	dependenciesValue, ok := input["dependencies"]
+	if ok {
+		dependenciesObject, ok := dependenciesValue.(map[string]interface{})
+		if !ok {
+			return -1, invalidDependenciesValue()
+		}
+
+		p.Push("dependencies")
+
+		dependencies := map[string]schemaDependency{}
+		for key, value := range dependenciesObject {
+			p.Push(key)
+
+			switch val := value.(type) {
+			case map[string]interface{}:
+				subSchema, err := p.Parse(val)
+				if err != nil {
+					return -1, err
+				}
+
+				dependencies[key] = schemaDependency{
+					IsSchema: true,
+					Schema:   subSchema,
+				}
+			case []interface{}:
+				properties := []string{}
+				for _, property := range val {
+					propertyString, ok := property.(string)
+					if !ok {
+						return -1, invalidPropertyList()
+					}
+
+					properties = append(properties, propertyString)
+				}
+
+				dependencies[key] = schemaDependency{
+					IsSchema:   false,
+					Properties: properties,
+				}
+			default:
+				return -1, invalidDependencyValue()
+			}
+
+			p.Pop()
+		}
+
+		s.Dependencies.IsSet = true
+		s.Dependencies.Deps = dependencies
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

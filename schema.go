@@ -37,6 +37,7 @@ type schema struct {
 	Properties           schemaProperties
 	PatternProperties    schemaPatternProperties
 	AdditionalProperties schemaAdditionalProperties
+	Dependencies         schemaDependencies
 }
 
 type schemaNot struct {
@@ -204,4 +205,15 @@ type schemaPatternProperties struct {
 type schemaAdditionalProperties struct {
 	IsSet  bool
 	Schema int
+}
+
+type schemaDependencies struct {
+	IsSet bool
+	Deps  map[string]schemaDependency
+}
+
+type schemaDependency struct {
+	IsSchema   bool
+	Schema     int
+	Properties []string
 }

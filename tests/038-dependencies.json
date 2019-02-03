@@ -1,0 +1,90 @@
+[
+  {
+    "name": "check schema or properties if some property exists",
+    "registry": [],
+    "schema": {
+      "dependencies": {
+        "foo": {
+          "type": "null"
+        },
+        "bar": [
+          "baz",
+          "quux"
+        ]
+      }
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "bar": null,
+          "baz": null,
+          "quux": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": null,
+          "baz": null,
+          "quux": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": "foo"
+        },
+        "errors": [
+          {
+            "instancePath": "/foo",
+            "schemaPath": "/dependencies/foo/type"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "bar": null,
+          "quux": null
+        },
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/dependencies/bar/0"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "foo": "foo",
+          "bar": null,
+          "quux": null
+        },
+        "errors": [
+          {
+            "instancePath": "/foo",
+            "schemaPath": "/dependencies/foo/type"
+          },
+          {
+            "instancePath": "",
+            "schemaPath": "/dependencies/bar/0"
+          }
+        ]
+      }
+    ]
+  }
+]

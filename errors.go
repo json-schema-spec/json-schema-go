@@ -3,19 +3,21 @@ package jsonschema
 // Error represents a union of errors that can arise from parsing and validating
 // JSON Schemas.
 type Error struct {
-	invalidTypeValue    bool
-	schemaNotObject     bool
-	idNotString         bool
-	invalidURI          bool
-	refNotString        bool
-	uriNotDefined       bool
-	invalidArrayValue   bool
-	invalidNumberValue  bool
-	invalidNaturalValue bool
-	invalidRegexpValue  bool
-	invalidBoolValue    bool
-	invalidPropertyList bool
-	invalidObjectValue  bool
+	invalidTypeValue         bool
+	schemaNotObject          bool
+	idNotString              bool
+	invalidURI               bool
+	refNotString             bool
+	uriNotDefined            bool
+	invalidArrayValue        bool
+	invalidNumberValue       bool
+	invalidNaturalValue      bool
+	invalidRegexpValue       bool
+	invalidBoolValue         bool
+	invalidPropertyList      bool
+	invalidObjectValue       bool
+	invalidDependenciesValue bool
+	invalidDependencyValue   bool
 }
 
 func invalidTypeValue() *Error {
@@ -68,6 +70,14 @@ func invalidPropertyList() *Error {
 
 func invalidObjectValue() *Error {
 	return &Error{invalidObjectValue: true}
+}
+
+func invalidDependenciesValue() *Error {
+	return &Error{invalidDependenciesValue: true}
+}
+
+func invalidDependencyValue() *Error {
+	return &Error{invalidDependencyValue: true}
 }
 
 // InvalidTypeValue is whether an Error indicates a "type" keyword value wasn't
@@ -127,6 +137,18 @@ func (e *Error) InvalidPropertyList() bool {
 // expected to be an object, but was not.
 func (e *Error) InvalidObjectValue() bool {
 	return e.invalidObjectValue
+}
+
+// InvalidDependenciesValue is whether an Error indicates a keyword value which
+// was expected to be a set of dependencies, but was not.
+func (e *Error) InvalidDependenciesValue() bool {
+	return e.invalidDependenciesValue
+}
+
+// InvalidDependencyValue is whether an Error indicates a keyword value which
+// was expected to be a dependency, but was not.
+func (e *Error) InvalidDependencyValue() bool {
+	return e.invalidDependencyValue
 }
 
 // Error satisfies the error interface.

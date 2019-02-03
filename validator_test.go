@@ -483,6 +483,59 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"SchemaNotObject",
 		},
+		{
+			"non-object dependencies value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"dependencies": "foobar",
+				},
+			},
+			nil,
+			"InvalidDependenciesValue",
+		},
+		{
+			"non-array and non-object dependencies property value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"dependencies": map[string]interface{}{
+						"foo": 3,
+					},
+				},
+			},
+			nil,
+			"InvalidDependencyValue",
+		},
+		{
+			"invalid schema dependencies property value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"dependencies": map[string]interface{}{
+						"foo": map[string]interface{}{
+							"items": 3,
+						},
+					},
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
+		{
+			"non-string element of dependencies property",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"dependencies": map[string]interface{}{
+						"foo": []interface{}{
+							"bar",
+							"baz",
+							3,
+							"quux",
+						},
+					},
+				},
+			},
+			nil,
+			"InvalidPropertyList",
+		},
 	}
 
 	for _, tt := range testCases {
