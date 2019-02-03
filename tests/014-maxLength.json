@@ -30,5 +30,42 @@
         ]
       }
     ]
+  },
+  {
+    "name": "zero max string lenth rejects all nonempty strings",
+    "registry": [],
+    "schema": {
+      "maxLength": 0
+    },
+    "instances": [
+      {
+        "instance": {
+          "not": "a string"
+        },
+        "errors": []
+      },
+      {
+        "instance": "",
+        "errors": []
+      },
+      {
+        "instance": "abc",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxLength"
+          }
+        ]
+      },
+      {
+        "instance": "abcde",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxLength"
+          }
+        ]
+      }
+    ]
   }
 ]
