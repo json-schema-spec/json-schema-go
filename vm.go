@@ -264,6 +264,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			vm.popSchemaToken()
 		}
 
+		if schema.MaxItems.IsSet {
+			if len(val) > schema.MaxItems.Value {
+				vm.pushSchemaToken("maxItems")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
+
 		if schema.Items.IsSet {
 			if schema.Items.IsSingle {
 				vm.pushSchemaToken("items")

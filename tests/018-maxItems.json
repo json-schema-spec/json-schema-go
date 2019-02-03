@@ -1,0 +1,67 @@
+[
+  {
+    "name": "positive max array length",
+    "registry": [],
+    "schema": {
+      "maxItems": 3
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": [null, null, null],
+        "errors": []
+      },
+      {
+        "instance": [null, null, null, null, null],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxItems"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "zero max array length rejects all nonempty arrays",
+    "registry": [],
+    "schema": {
+      "maxItems": 0
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": []
+      },
+      {
+        "instance": [null, null, null],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxItems"
+          }
+        ]
+      },
+      {
+        "instance": [null, null, null, null, null],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/maxItems"
+          }
+        ]
+      }
+    ]
+  }
+]

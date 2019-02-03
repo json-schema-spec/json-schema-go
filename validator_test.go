@@ -253,6 +253,36 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"SchemaNotObject",
 		},
+		{
+			"non-number maxItems value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxItems": "foobar",
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-int maxItems value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxItems": 3.14,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-positive maxItems value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxItems": -2.0,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
 	}
 
 	for _, tt := range testCases {
