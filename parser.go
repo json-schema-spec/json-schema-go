@@ -539,6 +539,39 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.Required.Properties = properties
 	}
 
+	propertiesValue, ok := input["properties"]
+	if ok {
+		propertiesObject, ok := propertiesValue.(map[string]interface{})
+		if !ok {
+			return -1, invalidObjectValue()
+		}
+
+		p.Push("properties")
+
+		schemas := map[string]int{}
+		for property, elem := range propertiesObject {
+			elemObject, ok := elem.(map[string]interface{})
+			if !ok {
+				return -1, schemaNotObject()
+			}
+
+			p.Push(property)
+			subSchema, err := p.Parse(elemObject)
+			if err != nil {
+				return -1, err
+			}
+
+			schemas[property] = subSchema
+
+			p.Pop()
+		}
+
+		s.Properties.IsSet = true
+		s.Properties.Schemas = schemas
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

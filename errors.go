@@ -15,6 +15,7 @@ type Error struct {
 	invalidRegexpValue  bool
 	invalidBoolValue    bool
 	invalidPropertyList bool
+	invalidObjectValue  bool
 }
 
 func invalidTypeValue() *Error {
@@ -63,6 +64,10 @@ func invalidBoolValue() *Error {
 
 func invalidPropertyList() *Error {
 	return &Error{invalidPropertyList: true}
+}
+
+func invalidObjectValue() *Error {
+	return &Error{invalidObjectValue: true}
 }
 
 // InvalidTypeValue is whether an Error indicates a "type" keyword value wasn't
@@ -116,6 +121,12 @@ func (e *Error) InvalidBoolValue() bool {
 // expected to be a list of properties, but was not.
 func (e *Error) InvalidPropertyList() bool {
 	return e.invalidPropertyList
+}
+
+// InvalidObjectValue is whether an Error indicates a keyword value which was
+// expected to be an object, but was not.
+func (e *Error) InvalidObjectValue() bool {
+	return e.invalidObjectValue
 }
 
 // Error satisfies the error interface.

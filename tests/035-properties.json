@@ -1,0 +1,67 @@
+[
+  {
+    "name": "schemas for each property",
+    "registry": [],
+    "schema": {
+      "properties": {
+        "foo": {
+          "type": "null"
+        },
+        "bar": {
+          "type": "boolean"
+        }
+      }
+    },
+    "instances": [
+      {
+        "instance": "not an object",
+        "errors": []
+      },
+      {
+        "instance": {},
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": true
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": "foo",
+          "bar": true
+        },
+        "errors": [
+          {
+            "instancePath": "/foo",
+            "schemaPath": "/properties/foo/type"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "foo": "foo",
+          "bar": "bar"
+        },
+        "errors": [
+          {
+            "instancePath": "/bar",
+            "schemaPath": "/properties/bar/type"
+          },
+          {
+            "instancePath": "/foo",
+            "schemaPath": "/properties/foo/type"
+          }
+        ]
+      }
+    ]
+  }
+]

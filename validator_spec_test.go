@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/ucarion/json-pointer"
@@ -79,6 +80,14 @@ func TestValidatorSpec(t *testing.T) {
 									URI:          *uri,
 								}
 							}
+
+							sort.Slice(expected, func(i, j int) bool {
+								return expected[i].SchemaPath.String() < expected[j].SchemaPath.String()
+							})
+
+							sort.Slice(result.Errors, func(i, j int) bool {
+								return result.Errors[i].SchemaPath.String() < result.Errors[j].SchemaPath.String()
+							})
 
 							assert.Equal(t, expected, result.Errors)
 						})
