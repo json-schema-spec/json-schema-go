@@ -391,44 +391,50 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			vm.popSchemaToken()
 		}
 
-		if schema.Properties.IsSet {
-			vm.pushSchemaToken("properties")
+		for key, value := range val {
+			isAdditional := true
 
-			for property, propertySchemaIndex := range schema.Properties.Schemas {
-				instanceValue, ok := val[property]
+			if schema.Properties.IsSet {
+				if index, ok := schema.Properties.Schemas[key]; ok {
+					isAdditional = false
+					propertySchema := vm.registry.GetIndex(index)
 
-				if ok {
-					propertySchema := vm.registry.GetIndex(propertySchemaIndex)
-
-					vm.pushInstanceToken(property)
-					vm.pushSchemaToken(property)
-					vm.execSchema(propertySchema, instanceValue)
+					vm.pushSchemaToken("properties")
+					vm.pushSchemaToken(key)
+					vm.pushInstanceToken(key)
+					vm.execSchema(propertySchema, value)
 					vm.popInstanceToken()
+					vm.popSchemaToken()
 					vm.popSchemaToken()
 				}
 			}
 
-			vm.popSchemaToken()
-		}
+			if schema.PatternProperties.IsSet {
+				for pattern, index := range schema.PatternProperties.Schemas {
+					if pattern.MatchString(key) {
+						isAdditional = false
+						propertySchema := vm.registry.GetIndex(index)
 
-		if schema.PatternProperties.IsSet {
-			vm.pushSchemaToken("patternProperties")
-
-			for pattern, patternSchemaIndex := range schema.PatternProperties.Schemas {
-				for instanceProperty, instanceValue := range val {
-					if pattern.MatchString(instanceProperty) {
-						patternPropertySchema := vm.registry.GetIndex(patternSchemaIndex)
-
-						vm.pushInstanceToken(instanceProperty)
+						vm.pushSchemaToken("patternProperties")
 						vm.pushSchemaToken(pattern.String())
-						vm.execSchema(patternPropertySchema, instanceValue)
-						vm.popSchemaToken()
+						vm.pushInstanceToken(key)
+						vm.execSchema(propertySchema, value)
 						vm.popInstanceToken()
+						vm.popSchemaToken()
+						vm.popSchemaToken()
 					}
 				}
 			}
 
-			vm.popSchemaToken()
+			if schema.AdditionalProperties.IsSet && isAdditional {
+				propertySchema := vm.registry.GetIndex(schema.AdditionalProperties.Schema)
+
+				vm.pushSchemaToken("additionalProperties")
+				vm.pushInstanceToken(key)
+				vm.execSchema(propertySchema, value)
+				vm.popInstanceToken()
+				vm.popSchemaToken()
+			}
 		}
 	default:
 		// TODO a better error here

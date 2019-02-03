@@ -473,6 +473,16 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"SchemaNotObject",
 		},
+		{
+			"non-object additionalProperties value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"additionalProperties": "foobar",
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {

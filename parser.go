@@ -610,6 +610,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		p.Pop()
 	}
 
+	additionalPropertiesValue, ok := input["additionalProperties"]
+	if ok {
+		additionalPropertiesObject, ok := additionalPropertiesValue.(map[string]interface{})
+		if !ok {
+			return -1, schemaNotObject()
+		}
+
+		p.Push("additionalProperties")
+
+		subSchema, err := p.Parse(additionalPropertiesObject)
+		if err != nil {
+			return -1, err
+		}
+
+		s.AdditionalProperties.IsSet = true
+		s.AdditionalProperties.Schema = subSchema
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

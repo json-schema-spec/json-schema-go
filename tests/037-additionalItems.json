@@ -1,0 +1,73 @@
+[
+  {
+    "name": "schemas not matching properties or patternProperties",
+    "registry": [],
+    "schema": {
+      "properties": {
+        "foo": {
+          "type": "null"
+        }
+      },
+      "patternProperties": {
+        "ba+r": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "instances": [
+      {
+        "instance": {
+          "foo": null,
+          "bar": true,
+          "baaar": true
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": true,
+          "baaar": true,
+          "quux": "foo"
+        },
+        "errors": []
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": true,
+          "baaar": true,
+          "quux": []
+        },
+        "errors": [
+          {
+            "instancePath": "/quux",
+            "schemaPath": "/additionalProperties/type"
+          }
+        ]
+      },
+      {
+        "instance": {
+          "foo": null,
+          "bar": true,
+          "baaar": true,
+          "quux": [],
+          "asdf": []
+        },
+        "errors": [
+          {
+            "instancePath": "/quux",
+            "schemaPath": "/additionalProperties/type"
+          },
+          {
+            "instancePath": "/asdf",
+            "schemaPath": "/additionalProperties/type"
+          }
+        ]
+      }
+    ]
+  }
+]
