@@ -1,0 +1,133 @@
+[
+  {
+    "name": "unique items required",
+    "registry": [],
+    "schema": {
+      "uniqueItems": true
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          }
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          },
+          null
+        ],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/uniqueItems"
+          }
+        ]
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          },
+          "foo"
+        ],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/uniqueItems"
+          }
+        ]
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          },
+          {
+            "foo": "bar"
+          }
+        ],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/uniqueItems"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "unique items not required",
+    "registry": [],
+    "schema": {
+      "uniqueItems": false
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          }
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          },
+          null
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          },
+          "foo"
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          null,
+          "foo",
+          {
+            "foo": "bar"
+          },
+          {
+            "foo": "bar"
+          }
+        ],
+        "errors": []
+      }
+    ]
+  }
+]

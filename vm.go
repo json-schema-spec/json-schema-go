@@ -280,6 +280,40 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			}
 		}
 
+		if schema.UniqueItems.IsSet && schema.UniqueItems.Value {
+		loop:
+			for i := 0; i < len(val); i++ {
+				for j := i + 1; j < len(val); j++ {
+					if reflect.DeepEqual(val[i], val[j]) {
+						vm.pushSchemaToken("uniqueItems")
+						vm.reportError()
+						vm.popSchemaToken()
+
+						break loop
+					}
+				}
+			}
+		}
+
+		if schema.Contains.IsSet {
+			containsOk := false
+			for _, elem := range val {
+				containsSchema := vm.registry.GetIndex(schema.Contains.Schema)
+				containsErrors := vm.psuedoExec(containsSchema, elem)
+
+				if !containsErrors {
+					containsOk = true
+					break
+				}
+			}
+
+			if !containsOk {
+				vm.pushSchemaToken("contains")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
+
 		if schema.Items.IsSet {
 			if schema.Items.IsSingle {
 				vm.pushSchemaToken("items")

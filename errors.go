@@ -13,6 +13,7 @@ type Error struct {
 	invalidNumberValue  bool
 	invalidNaturalValue bool
 	invalidRegexpValue  bool
+	invalidBoolValue    bool
 }
 
 func invalidTypeValue() *Error {
@@ -55,6 +56,10 @@ func invalidRegexpValue() *Error {
 	return &Error{invalidRegexpValue: true}
 }
 
+func invalidBoolValue() *Error {
+	return &Error{invalidBoolValue: true}
+}
+
 // InvalidTypeValue is whether an Error indicates a "type" keyword value wasn't
 // in a valid format.
 func (e *Error) InvalidTypeValue() bool {
@@ -94,6 +99,12 @@ func (e *Error) InvalidNaturalValue() bool {
 // expected to be a regexp, but was not.
 func (e *Error) InvalidRegexpValue() bool {
 	return e.invalidRegexpValue
+}
+
+// InvalidBoolValue is whether an Error indicates a keyword value which was
+// expected to be a bool, but was not.
+func (e *Error) InvalidBoolValue() bool {
+	return e.invalidBoolValue
 }
 
 // Error satisfies the error interface.

@@ -1,0 +1,56 @@
+[
+  {
+    "name": "arrays must contain an element matching schema",
+    "registry": [],
+    "schema": {
+      "contains": {
+        "type": "null"
+      }
+    },
+    "instances": [
+      {
+        "instance": "not an array",
+        "errors": []
+      },
+      {
+        "instance": [
+          null
+        ],
+        "errors": []
+      },
+      {
+        "instance": [
+          1,
+          2,
+          3,
+          null,
+          4
+        ],
+        "errors": []
+      },
+      {
+        "instance": [],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/contains"
+          }
+        ]
+      },
+      {
+        "instance": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/contains"
+          }
+        ]
+      }
+    ]
+  }
+]

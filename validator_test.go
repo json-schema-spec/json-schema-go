@@ -313,6 +313,26 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNaturalValue",
 		},
+		{
+			"non-boolean uniqueItems value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"uniqueItems": "foobar",
+				},
+			},
+			nil,
+			"InvalidBoolValue",
+		},
+		{
+			"value of contains not object",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"contains": "foo",
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {

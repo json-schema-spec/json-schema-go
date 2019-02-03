@@ -447,6 +447,37 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		s.MinItems.Value = int(minItemsInt)
 	}
 
+	uniqueItemsValue, ok := input["uniqueItems"]
+	if ok {
+		uniqueItemsBool, ok := uniqueItemsValue.(bool)
+		if !ok {
+			return -1, invalidBoolValue()
+		}
+
+		s.UniqueItems.IsSet = true
+		s.UniqueItems.Value = uniqueItemsBool
+	}
+
+	containsValue, ok := input["contains"]
+	if ok {
+		containsObject, ok := containsValue.(map[string]interface{})
+		if !ok {
+			return -1, schemaNotObject()
+		}
+
+		p.Push("contains")
+
+		subSchema, err := p.Parse(containsObject)
+		if err != nil {
+			return -1, err
+		}
+
+		s.Contains.IsSet = true
+		s.Contains.Schema = subSchema
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }
