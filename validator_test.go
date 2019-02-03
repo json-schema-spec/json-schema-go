@@ -161,6 +161,36 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"InvalidNumberValue",
 		},
+		{
+			"non-number maxLength value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxLength": "foobar",
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-int maxLength value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxLength": 3.14,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
+		{
+			"non-positive maxLength value",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"maxLength": -2.0,
+				},
+			},
+			nil,
+			"InvalidNaturalValue",
+		},
 	}
 
 	for _, tt := range testCases {

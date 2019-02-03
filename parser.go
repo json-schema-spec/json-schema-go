@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"errors"
+	"math"
 	"net/url"
 	"strconv"
 
@@ -327,6 +328,26 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 		s.ExclusiveMinimum.IsSet = true
 		s.ExclusiveMinimum.Value = exclusiveMinimumNumber
+	}
+
+	maxLengthValue, ok := input["maxLength"]
+	if ok {
+		maxLengthNumber, ok := maxLengthValue.(float64)
+		if !ok {
+			return -1, invalidNaturalValue()
+		}
+
+		maxLengthInt, rem := math.Modf(maxLengthNumber)
+		if rem > epsilon {
+			return -1, invalidNaturalValue()
+		}
+
+		if maxLengthInt < 0 {
+			return -1, invalidNaturalValue()
+		}
+
+		s.MaxLength.IsSet = true
+		s.MaxLength.Value = int(maxLengthInt)
 	}
 
 	index := p.registry.Insert(p.URI(), s)

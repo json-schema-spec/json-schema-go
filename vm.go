@@ -232,6 +232,14 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			vm.reportError()
 			vm.popSchemaToken()
 		}
+
+		if schema.MaxLength.IsSet {
+			if len(val) > schema.MaxLength.Value {
+				vm.pushSchemaToken("maxLength")
+				vm.reportError()
+				vm.popSchemaToken()
+			}
+		}
 	case []interface{}:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeArray) {
 			vm.pushSchemaToken("type")
