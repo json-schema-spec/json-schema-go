@@ -10,27 +10,11 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
-  name = "github.com/google/uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
-  version = "v1.1.0"
-
-[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
-  version = "v1.0.0"
-
-[[projects]]
-  digest = "1:0e1c71dcf0fdb4b85880d763404c568f0a87800a5cce2c7831b38d1357a79153"
-  name = "github.com/segmentio/errors-go"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9d4406d12897f2b6154fe461b1bf1dd146ac2860"
   version = "v1.0.0"
 
 [[projects]]
@@ -53,8 +37,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/google/uuid",
-    "github.com/segmentio/errors-go",
     "github.com/stretchr/testify/assert",
     "github.com/ucarion/json-pointer",
   ]
