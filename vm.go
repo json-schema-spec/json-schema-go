@@ -161,6 +161,63 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		}
 	}
 
+	if schema.AllOf.IsSet {
+		vm.pushSchemaToken("allOf")
+
+		for i, index := range schema.AllOf.Schemas {
+			allOfSchema := vm.registry.GetIndex(index)
+			token := strconv.FormatInt(int64(i), 10)
+
+			vm.pushSchemaToken(token)
+			vm.execSchema(allOfSchema, instance)
+			vm.popSchemaToken()
+		}
+
+		vm.popSchemaToken()
+	}
+
+	if schema.AnyOf.IsSet {
+		anyOfOk := false
+		for _, index := range schema.AnyOf.Schemas {
+			anyOfSchema := vm.registry.GetIndex(index)
+			anyOfErrors := vm.psuedoExec(anyOfSchema, instance)
+
+			if !anyOfErrors {
+				anyOfOk = true
+				break
+			}
+		}
+
+		if !anyOfOk {
+			vm.pushSchemaToken("anyOf")
+			vm.reportError()
+			vm.popSchemaToken()
+		}
+	}
+
+	if schema.OneOf.IsSet {
+		oneOfOk := false
+		for _, index := range schema.OneOf.Schemas {
+			oneOfSchema := vm.registry.GetIndex(index)
+			oneOfErrors := vm.psuedoExec(oneOfSchema, instance)
+
+			if !oneOfErrors {
+				if oneOfOk {
+					oneOfOk = false
+					break
+				} else {
+					oneOfOk = true
+				}
+			}
+		}
+
+		if !oneOfOk {
+			vm.pushSchemaToken("oneOf")
+			vm.reportError()
+			vm.popSchemaToken()
+		}
+	}
+
 	switch val := instance.(type) {
 	case nil:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeNull) {

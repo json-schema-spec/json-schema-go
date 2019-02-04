@@ -702,6 +702,99 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		p.Pop()
 	}
 
+	allOfValue, ok := input["allOf"]
+	if ok {
+		allOfArray, ok := allOfValue.([]interface{})
+		if !ok {
+			return -1, invalidArrayValue()
+		}
+
+		p.Push("allOf")
+
+		s.AllOf.IsSet = true
+		s.AllOf.Schemas = make([]int, len(allOfArray))
+		for i, schemaValue := range allOfArray {
+			p.Push(strconv.FormatInt(int64(i), 10))
+
+			schemaObject, ok := schemaValue.(map[string]interface{})
+			if !ok {
+				return -1, schemaNotObject()
+			}
+
+			subSchema, err := p.Parse(schemaObject)
+			if err != nil {
+				return -1, err
+			}
+
+			s.AllOf.Schemas[i] = subSchema
+			p.Pop()
+		}
+
+		p.Pop()
+	}
+
+	anyOfValue, ok := input["anyOf"]
+	if ok {
+		anyOfArray, ok := anyOfValue.([]interface{})
+		if !ok {
+			return -1, invalidArrayValue()
+		}
+
+		p.Push("anyOf")
+
+		s.AnyOf.IsSet = true
+		s.AnyOf.Schemas = make([]int, len(anyOfArray))
+		for i, schemaValue := range anyOfArray {
+			p.Push(strconv.FormatInt(int64(i), 10))
+
+			schemaObject, ok := schemaValue.(map[string]interface{})
+			if !ok {
+				return -1, schemaNotObject()
+			}
+
+			subSchema, err := p.Parse(schemaObject)
+			if err != nil {
+				return -1, err
+			}
+
+			s.AnyOf.Schemas[i] = subSchema
+			p.Pop()
+		}
+
+		p.Pop()
+	}
+
+	oneOfValue, ok := input["oneOf"]
+	if ok {
+		oneOfArray, ok := oneOfValue.([]interface{})
+		if !ok {
+			return -1, invalidArrayValue()
+		}
+
+		p.Push("oneOf")
+
+		s.OneOf.IsSet = true
+		s.OneOf.Schemas = make([]int, len(oneOfArray))
+		for i, schemaValue := range oneOfArray {
+			p.Push(strconv.FormatInt(int64(i), 10))
+
+			schemaObject, ok := schemaValue.(map[string]interface{})
+			if !ok {
+				return -1, schemaNotObject()
+			}
+
+			subSchema, err := p.Parse(schemaObject)
+			if err != nil {
+				return -1, err
+			}
+
+			s.OneOf.Schemas[i] = subSchema
+			p.Pop()
+		}
+
+		p.Pop()
+	}
+
 	index := p.registry.Insert(p.URI(), s)
 	return index, nil
 }

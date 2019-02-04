@@ -1,0 +1,40 @@
+[
+  {
+    "name": "accept elements matching exactly one out of a set of schemas",
+    "registry": [],
+    "schema": {
+      "oneOf": [
+        {
+          "minLength": 3
+        },
+        {
+          "minLength": 5
+        }
+      ]
+    },
+    "instances": [
+      {
+        "instance": "abc",
+        "errors": []
+      },
+      {
+        "instance": "",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/oneOf"
+          }
+        ]
+      },
+      {
+        "instance": "abcde",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/oneOf"
+          }
+        ]
+      }
+    ]
+  }
+]

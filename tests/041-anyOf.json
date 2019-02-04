@@ -1,0 +1,35 @@
+[
+  {
+    "name": "accept the union of multiple schemas",
+    "registry": [],
+    "schema": {
+      "anyOf": [
+        {
+          "maxLength": 3
+        },
+        {
+          "minLength": 5
+        }
+      ]
+    },
+    "instances": [
+      {
+        "instance": "abc",
+        "errors": []
+      },
+      {
+        "instance": "abcde",
+        "errors": []
+      },
+      {
+        "instance": "abcd",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/anyOf"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -546,6 +546,72 @@ func TestValidatorSeal(t *testing.T) {
 			nil,
 			"SchemaNotObject",
 		},
+		{
+			"non-array value of allOf",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"allOf": "foobar",
+				},
+			},
+			nil,
+			"InvalidArrayValue",
+		},
+		{
+			"non-schema element of allOf",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"allOf": []interface{}{
+						"foobar",
+					},
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
+		{
+			"non-array value of anyOf",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"anyOf": "foobar",
+				},
+			},
+			nil,
+			"InvalidArrayValue",
+		},
+		{
+			"non-schema element of anyOf",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"anyOf": []interface{}{
+						"foobar",
+					},
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
+		{
+			"non-array value of oneOf",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"oneOf": "foobar",
+				},
+			},
+			nil,
+			"InvalidArrayValue",
+		},
+		{
+			"non-schema element of oneOf",
+			[]map[string]interface{}{
+				map[string]interface{}{
+					"oneOf": []interface{}{
+						"foobar",
+					},
+				},
+			},
+			nil,
+			"SchemaNotObject",
+		},
 	}
 
 	for _, tt := range testCases {

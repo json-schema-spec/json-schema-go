@@ -1,0 +1,40 @@
+[
+  {
+    "name": "require multiple schemas at once",
+    "registry": [],
+    "schema": {
+      "allOf": [
+        {
+          "maxLength": 5
+        },
+        {
+          "minLength": 3
+        }
+      ]
+    },
+    "instances": [
+      {
+        "instance": "abcd",
+        "errors": []
+      },
+      {
+        "instance": "",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/allOf/1/minLength"
+          }
+        ]
+      },
+      {
+        "instance": "abcdefg",
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/allOf/0/maxLength"
+          }
+        ]
+      }
+    ]
+  }
+]

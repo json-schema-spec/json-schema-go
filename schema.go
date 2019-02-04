@@ -39,6 +39,9 @@ type schema struct {
 	AdditionalProperties schemaAdditionalProperties
 	Dependencies         schemaDependencies
 	PropertyNames        schemaPropertyNames
+	AllOf                schemaAllOf
+	AnyOf                schemaAnyOf
+	OneOf                schemaOneOf
 }
 
 type schemaNot struct {
@@ -222,4 +225,19 @@ type schemaDependency struct {
 type schemaPropertyNames struct {
 	IsSet  bool
 	Schema int
+}
+
+type schemaAllOf struct {
+	IsSet   bool
+	Schemas []int
+}
+
+type schemaAnyOf struct {
+	IsSet   bool
+	Schemas []int
+}
+
+type schemaOneOf struct {
+	IsSet   bool
+	Schemas []int
 }
