@@ -4,6 +4,8 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/ucarion/json-pointer"
+
 	"github.com/segmentio/errors-go"
 	"github.com/stretchr/testify/assert"
 )
@@ -629,13 +631,49 @@ func TestValidatorSeal(t *testing.T) {
 }
 
 func TestValidatorOverflow(t *testing.T) {
-	schema := map[string]interface{}{
-		"$ref": "#",
+	schemas := []map[string]interface{}{
+		map[string]interface{}{
+			"$ref": "#",
+		},
 	}
 
-	validator, _, err := NewValidator([]map[string]interface{}{schema})
+	validator, _, err := NewValidator(schemas)
 	assert.NoError(t, err)
 
 	_, err = validator.Validate(nil)
 	assert.Equal(t, ErrStackOverflow, err)
+}
+
+func TestValidatorMaxErrors(t *testing.T) {
+	schemas := []map[string]interface{}{
+		map[string]interface{}{
+			"allOf": []interface{}{
+				map[string]interface{}{
+					"type": "null",
+				},
+				map[string]interface{}{
+					"$ref": "#",
+				},
+			},
+		},
+	}
+
+	validationError := ValidationError{
+		InstancePath: jsonpointer.Ptr{Tokens: []string{}},
+		SchemaPath:   jsonpointer.Ptr{Tokens: []string{"allOf", "0", "type"}},
+	}
+
+	expectedResult := []ValidationError{}
+	for i := 0; i < 5; i++ {
+		expectedResult = append(expectedResult, validationError)
+	}
+
+	validator, _, _ := NewValidatorWithConfig(schemas, ValidatorConfig{
+		MaxErrors:     5,
+		MaxStackDepth: 10, // max depth > errors, so no stack overflow should occur
+	})
+
+	result, err := validator.Validate(true)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedResult, result.Errors)
 }

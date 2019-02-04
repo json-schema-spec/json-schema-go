@@ -7,8 +7,8 @@ import (
 	"github.com/ucarion/json-pointer"
 )
 
-// DefaultMaxStackDepth is the default maximum number of cross-references a
-// Validator will follow before returning ErrStackOverflow.
+// DefaultMaxStackDepth is the default value for MaxStackDepth in
+// ValidatorConfig.
 const DefaultMaxStackDepth = 128
 
 // Validator compiles schemas and evaluates instances.
@@ -16,6 +16,20 @@ type Validator struct {
 	schemas       []map[string]interface{}
 	registry      registry
 	maxStackDepth int
+	maxErrors     int
+}
+
+// ValidatorConfig contains configuration for a Validator.
+type ValidatorConfig struct {
+	// MaxStackDepth is the maximum number of cross-references a Validator will
+	// follow before returning ErrStackOverflow.
+	MaxStackDepth int
+
+	// MaxErrors is the maximum number of errors to return before the Validator
+	// quits early.
+	//
+	// A value of zero indicates to produce all errors.
+	MaxErrors int
 }
 
 // ValidationResult contains information on whether an instance successfully
@@ -51,9 +65,21 @@ type ValidationError struct {
 // returned list. It is therefore possible for the same URI to appear multiple
 // times in the list.
 func NewValidator(schemas []map[string]interface{}) (Validator, []url.URL, error) {
+	return NewValidatorWithConfig(schemas, ValidatorConfig{
+		MaxStackDepth: DefaultMaxStackDepth,
+	})
+}
+
+// NewValidatorWithConfig constructs a new Validator that will use the given
+// schemas and config.
+//
+// See NewValidator for how schemas will be used. See ValidatorConfig for
+// configuration options.
+func NewValidatorWithConfig(schemas []map[string]interface{}, config ValidatorConfig) (Validator, []url.URL, error) {
 	v := Validator{
 		schemas:       schemas,
-		maxStackDepth: DefaultMaxStackDepth,
+		maxStackDepth: config.MaxStackDepth,
+		maxErrors:     config.MaxErrors,
 	}
 
 	missingURIs, err := v.seal()
@@ -121,7 +147,7 @@ func (v *Validator) seal() ([]url.URL, error) {
 // Validator.
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
 	id := url.URL{}
-	vm := newVM(v.registry, v.maxStackDepth)
+	vm := newVM(v.registry, v.maxStackDepth, v.maxErrors)
 
 	err := vm.Exec(id, instance)
 	if err != nil {

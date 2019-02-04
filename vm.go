@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"net/url"
@@ -12,6 +13,8 @@ import (
 )
 
 const epsilon = 1e-3
+
+var errMaxErrors = errors.New("internal error for maximum errors")
 
 type vm struct {
 	// registry holds an arena of schemas
@@ -25,6 +28,9 @@ type vm struct {
 
 	// maxStackDepth is the most number of $ref-s that can be followed at once
 	maxStackDepth int
+
+	// maxErrors is the most number of errors that can be reported
+	maxErrors int
 }
 
 type vmErrors struct {
@@ -57,7 +63,7 @@ type schemaStack struct {
 	tokens []string
 }
 
-func newVM(registry registry, maxStackDepth int) vm {
+func newVM(registry registry, maxStackDepth, maxErrors int) vm {
 	return vm{
 		registry: registry,
 		stack: stack{
@@ -69,6 +75,7 @@ func newVM(registry registry, maxStackDepth int) vm {
 			errors:    []ValidationError{},
 		},
 		maxStackDepth: maxStackDepth,
+		maxErrors:     maxErrors,
 	}
 }
 
@@ -92,7 +99,13 @@ func (vm *vm) Exec(uri url.URL, instance interface{}) error {
 	}
 
 	vm.pushNewSchema(uri, fragPtr.Tokens)
-	return vm.execSchema(schema, instance)
+	err = vm.execSchema(schema, instance)
+	if err == errMaxErrors {
+		// not a real error -- just an internal flag to quit early
+		return nil
+	}
+
+	return err
 }
 
 func (vm *vm) execSchema(schema schema, instance interface{}) error {
@@ -122,7 +135,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 
 		if !notErrors {
 			vm.pushSchemaToken("not")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	}
@@ -160,7 +175,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	if schema.Const.IsSet {
 		if !reflect.DeepEqual(instance, schema.Const.Value) {
 			vm.pushSchemaToken("const")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	}
@@ -176,7 +193,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 
 		if !enumOk {
 			vm.pushSchemaToken("enum")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	}
@@ -215,7 +234,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 
 		if !anyOfOk {
 			vm.pushSchemaToken("anyOf")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	}
@@ -241,7 +262,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 
 		if !oneOfOk {
 			vm.pushSchemaToken("oneOf")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	}
@@ -250,13 +273,17 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	case nil:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeNull) {
 			vm.pushSchemaToken("type")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	case bool:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeBoolean) {
 			vm.pushSchemaToken("type")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 	case float64:
@@ -268,7 +295,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 
 			if !typeOk && !schema.Type.contains(jsonTypeNumber) {
 				vm.pushSchemaToken("type")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -276,7 +305,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.MultipleOf.IsSet {
 			if math.Abs(math.Mod(val, schema.MultipleOf.Value)) > epsilon {
 				vm.pushSchemaToken("multipleOf")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -284,7 +315,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.Maximum.IsSet {
 			if val > schema.Maximum.Value {
 				vm.pushSchemaToken("maximum")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -292,7 +325,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.Minimum.IsSet {
 			if val < schema.Minimum.Value {
 				vm.pushSchemaToken("minimum")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -300,7 +335,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.ExclusiveMaximum.IsSet {
 			if val > schema.ExclusiveMaximum.Value-epsilon {
 				vm.pushSchemaToken("exclusiveMaximum")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -308,21 +345,27 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.ExclusiveMinimum.IsSet {
 			if val < schema.ExclusiveMinimum.Value+epsilon {
 				vm.pushSchemaToken("exclusiveMinimum")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
 	case string:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeString) {
 			vm.pushSchemaToken("type")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 
 		if schema.MaxLength.IsSet {
 			if utf8.RuneCountInString(val) > schema.MaxLength.Value {
 				vm.pushSchemaToken("maxLength")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -330,7 +373,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.MinLength.IsSet {
 			if utf8.RuneCountInString(val) < schema.MinLength.Value {
 				vm.pushSchemaToken("minLength")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -338,21 +383,27 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.Pattern.IsSet {
 			if !schema.Pattern.Value.MatchString(val) {
 				vm.pushSchemaToken("pattern")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
 	case []interface{}:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeArray) {
 			vm.pushSchemaToken("type")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 
 		if schema.MaxItems.IsSet {
 			if len(val) > schema.MaxItems.Value {
 				vm.pushSchemaToken("maxItems")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -360,7 +411,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.MinItems.IsSet {
 			if len(val) < schema.MinItems.Value {
 				vm.pushSchemaToken("minItems")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -371,7 +424,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 				for j := i + 1; j < len(val); j++ {
 					if reflect.DeepEqual(val[i], val[j]) {
 						vm.pushSchemaToken("uniqueItems")
-						vm.reportError()
+						if err := vm.reportError(); err != nil {
+							return err
+						}
 						vm.popSchemaToken()
 
 						break loop
@@ -397,7 +452,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 
 			if !containsOk {
 				vm.pushSchemaToken("contains")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -451,14 +508,18 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	case map[string]interface{}:
 		if schema.Type.IsSet && !schema.Type.contains(jsonTypeObject) {
 			vm.pushSchemaToken("type")
-			vm.reportError()
+			if err := vm.reportError(); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 
 		if schema.MaxProperties.IsSet {
 			if len(val) > schema.MaxProperties.Value {
 				vm.pushSchemaToken("maxProperties")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -466,7 +527,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		if schema.MinProperties.IsSet {
 			if len(val) < schema.MinProperties.Value {
 				vm.pushSchemaToken("minProperties")
-				vm.reportError()
+				if err := vm.reportError(); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -477,7 +540,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 			for i, property := range schema.Required.Properties {
 				if _, ok := val[property]; !ok {
 					vm.pushSchemaToken(strconv.FormatInt(int64(i), 10))
-					vm.reportError()
+					if err := vm.reportError(); err != nil {
+						return err
+					}
 					vm.popSchemaToken()
 				}
 			}
@@ -556,7 +621,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 						for i, property := range dep.Properties {
 							if _, ok := val[property]; !ok {
 								vm.pushSchemaToken(strconv.FormatInt(int64(i), 10))
-								vm.reportError()
+								if err := vm.reportError(); err != nil {
+									return err
+								}
 								vm.popSchemaToken()
 							}
 						}
@@ -640,7 +707,7 @@ func (vm *vm) popInstanceToken() {
 	vm.stack.instance = vm.stack.instance[:len(vm.stack.instance)-1]
 }
 
-func (vm *vm) reportError() {
+func (vm *vm) reportError() error {
 	schemaStack := vm.stack.schemas[len(vm.stack.schemas)-1]
 	instancePath := make([]string, len(vm.stack.instance))
 	schemaPath := make([]string, len(schemaStack.tokens))
@@ -654,4 +721,10 @@ func (vm *vm) reportError() {
 		SchemaPath:   jsonpointer.Ptr{Tokens: schemaPath},
 		URI:          schemaStack.id,
 	})
+
+	if len(vm.errors.errors) == vm.maxErrors {
+		return errMaxErrors
+	}
+
+	return nil
 }
