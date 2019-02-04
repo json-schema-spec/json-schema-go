@@ -3,7 +3,6 @@ package jsonschema
 import (
 	"net/url"
 
-	"github.com/pkg/errors"
 	"github.com/ucarion/json-pointer"
 )
 
@@ -58,13 +57,13 @@ type ValidationError struct {
 // will be used as the default schema of the Validator.
 //
 // If any schemas cross-reference schemas not present in the given list, then an
-// error will be included, and the missing schema's ID will be returned in the
-// list of url.URL.
+// instance of ErrMissingURIs will be returned. This value can be inspected to
+// find which URIs are missing.
 //
 // Each reference to a missing schema will result in an additional entry in the
 // returned list. It is therefore possible for the same URI to appear multiple
 // times in the list.
-func NewValidator(schemas []map[string]interface{}) (Validator, []url.URL, error) {
+func NewValidator(schemas []map[string]interface{}) (Validator, error) {
 	return NewValidatorWithConfig(schemas, ValidatorConfig{
 		MaxStackDepth: DefaultMaxStackDepth,
 	})
@@ -75,25 +74,25 @@ func NewValidator(schemas []map[string]interface{}) (Validator, []url.URL, error
 //
 // See NewValidator for how schemas will be used. See ValidatorConfig for
 // configuration options.
-func NewValidatorWithConfig(schemas []map[string]interface{}, config ValidatorConfig) (Validator, []url.URL, error) {
+func NewValidatorWithConfig(schemas []map[string]interface{}, config ValidatorConfig) (Validator, error) {
 	v := Validator{
 		schemas:       schemas,
 		maxStackDepth: config.MaxStackDepth,
 		maxErrors:     config.MaxErrors,
 	}
 
-	missingURIs, err := v.seal()
-	return v, missingURIs, err
+	err := v.seal()
+	return v, err
 }
 
-func (v *Validator) seal() ([]url.URL, error) {
+func (v *Validator) seal() error {
 	registry := newRegistry(32)
 	rawSchemas := map[url.URL]map[string]interface{}{}
 
-	for i, schema := range v.schemas {
+	for _, schema := range v.schemas {
 		parsed, err := parseRootSchema(&registry, schema)
 		if err != nil {
-			return nil, errors.Wrapf(err, "errors parsing schema %d", i)
+			return err
 		}
 
 		rawSchemas[parsed.ID] = schema
@@ -110,22 +109,22 @@ func (v *Validator) seal() ([]url.URL, error) {
 			if rawSchema, ok := rawSchemas[baseURI]; ok {
 				ptr, err := jsonpointer.New(uri.Fragment)
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				rawRefSchema, err := ptr.Eval(rawSchema)
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				refSchemaObject, ok := (*rawRefSchema).(map[string]interface{})
 				if !ok {
-					return nil, schemaNotObject()
+					return ErrorInvalidSchema
 				}
 
 				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, refSchemaObject)
 				if err != nil {
-					return nil, err
+					return err
 				}
 			} else {
 				undefinedURIs = append(undefinedURIs, baseURI)
@@ -136,11 +135,11 @@ func (v *Validator) seal() ([]url.URL, error) {
 	}
 
 	if len(undefinedURIs) > 0 {
-		return undefinedURIs, uriNotDefined()
+		return ErrMissingURIs{URIs: undefinedURIs}
 	}
 
 	v.registry = registry
-	return nil, nil
+	return nil
 }
 
 // Validate evaluates the given instance against the default schema of the

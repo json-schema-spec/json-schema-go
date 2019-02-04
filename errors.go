@@ -1,172 +1,26 @@
 package jsonschema
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"net/url"
+)
 
 // ErrStackOverflow indicates that the evaluator overflowed its internal stack
 // while evaluating a schema. This can arise from schemas that have cyclical
 // definitions using the "$ref" keyword.
 var ErrStackOverflow = errors.New("stack overflow evaluating schema")
 
-// Error represents a union of errors that can arise from parsing and validating
-// JSON Schemas.
-type Error struct {
-	invalidTypeValue         bool
-	schemaNotObject          bool
-	idNotString              bool
-	invalidURI               bool
-	refNotString             bool
-	uriNotDefined            bool
-	invalidArrayValue        bool
-	invalidNumberValue       bool
-	invalidNaturalValue      bool
-	invalidRegexpValue       bool
-	invalidBoolValue         bool
-	invalidPropertyList      bool
-	invalidObjectValue       bool
-	invalidDependenciesValue bool
-	invalidDependencyValue   bool
+// ErrorInvalidSchema indicates that an inputted schema was invalid.
+var ErrorInvalidSchema = errors.New("invalid schema")
+
+// ErrMissingURIs indicates that some schemas were referred to, but were not
+// known to the Validator.
+type ErrMissingURIs struct {
+	// URIs is a list of fragment-less URIs of schemas that are missing.
+	URIs []url.URL
 }
 
-func invalidTypeValue() *Error {
-	return &Error{invalidTypeValue: true}
-}
-
-func schemaNotObject() *Error {
-	return &Error{schemaNotObject: true}
-}
-
-func idNotString() *Error {
-	return &Error{idNotString: true}
-}
-
-func invalidURI() *Error {
-	return &Error{invalidURI: true}
-}
-
-func refNotString() *Error {
-	return &Error{refNotString: true}
-}
-
-func uriNotDefined() *Error {
-	return &Error{uriNotDefined: true}
-}
-
-func invalidArrayValue() *Error {
-	return &Error{invalidArrayValue: true}
-}
-
-func invalidNumberValue() *Error {
-	return &Error{invalidNumberValue: true}
-}
-
-func invalidNaturalValue() *Error {
-	return &Error{invalidNaturalValue: true}
-}
-
-func invalidRegexpValue() *Error {
-	return &Error{invalidRegexpValue: true}
-}
-
-func invalidBoolValue() *Error {
-	return &Error{invalidBoolValue: true}
-}
-
-func invalidPropertyList() *Error {
-	return &Error{invalidPropertyList: true}
-}
-
-func invalidObjectValue() *Error {
-	return &Error{invalidObjectValue: true}
-}
-
-func invalidDependenciesValue() *Error {
-	return &Error{invalidDependenciesValue: true}
-}
-
-func invalidDependencyValue() *Error {
-	return &Error{invalidDependencyValue: true}
-}
-
-// InvalidTypeValue is whether an Error indicates a "type" keyword value wasn't
-// in a valid format.
-func (e *Error) InvalidTypeValue() bool {
-	return e.invalidTypeValue
-}
-
-// SchemaNotObject is whether an Error indicates a schema was not an object.
-func (e *Error) SchemaNotObject() bool {
-	return e.schemaNotObject
-}
-
-// URINotDefined is whether an Error indicates a schema referred to a URI
-// unknown to the validator.
-func (e *Error) URINotDefined() bool {
-	return e.uriNotDefined
-}
-
-// InvalidArrayValue is whether an Error indicates a keyword value which was
-// expected to be an array, but was not.
-func (e *Error) InvalidArrayValue() bool {
-	return e.invalidArrayValue
-}
-
-// InvalidNumberValue is whether an Error indicates a keyword value which was
-// expected to be a number, but was not.
-func (e *Error) InvalidNumberValue() bool {
-	return e.invalidNumberValue
-}
-
-// InvalidNaturalValue is whether an Error indicates a keyword value which was
-// expected to be a natural number, but was not.
-func (e *Error) InvalidNaturalValue() bool {
-	return e.invalidNaturalValue
-}
-
-// InvalidRegexpValue is whether an Error indicates a keyword value which was
-// expected to be a regexp, but was not.
-func (e *Error) InvalidRegexpValue() bool {
-	return e.invalidRegexpValue
-}
-
-// InvalidBoolValue is whether an Error indicates a keyword value which was
-// expected to be a bool, but was not.
-func (e *Error) InvalidBoolValue() bool {
-	return e.invalidBoolValue
-}
-
-// InvalidPropertyList is whether an Error indicates a keyword value which was
-// expected to be a list of properties, but was not.
-func (e *Error) InvalidPropertyList() bool {
-	return e.invalidPropertyList
-}
-
-// InvalidObjectValue is whether an Error indicates a keyword value which was
-// expected to be an object, but was not.
-func (e *Error) InvalidObjectValue() bool {
-	return e.invalidObjectValue
-}
-
-// InvalidDependenciesValue is whether an Error indicates a keyword value which
-// was expected to be a set of dependencies, but was not.
-func (e *Error) InvalidDependenciesValue() bool {
-	return e.invalidDependenciesValue
-}
-
-// InvalidDependencyValue is whether an Error indicates a keyword value which
-// was expected to be a dependency, but was not.
-func (e *Error) InvalidDependencyValue() bool {
-	return e.invalidDependencyValue
-}
-
-// Error satisfies the error interface.
-func (e *Error) Error() string {
-	if e.InvalidTypeValue() {
-		return "invalid type value"
-	}
-
-	if e.SchemaNotObject() {
-		return "schema not object"
-	}
-
-	return "unknown error"
+func (e ErrMissingURIs) Error() string {
+	return fmt.Sprintf("missing schemas with URIs: %v", e.URIs)
 }

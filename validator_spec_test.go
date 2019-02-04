@@ -55,11 +55,11 @@ func TestValidatorSpec(t *testing.T) {
 				t.Run(tt.Name, func(t *testing.T) {
 					schemas := []map[string]interface{}{tt.Schema}
 					schemas = append(schemas, tt.Registry...)
-					validator, undefinedURIs, err := NewValidator(schemas)
+					validator, err := NewValidator(schemas)
 
-					assert.Empty(t, undefinedURIs)
 					assert.Nil(t, err)
 					if err != nil {
+						// quit early to avoid very noisy tests
 						return
 					}
 
