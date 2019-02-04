@@ -21,6 +21,7 @@ type ErrMissingURIs struct {
 	URIs []url.URL
 }
 
+// Error fulfills the error interface.
 func (e ErrMissingURIs) Error() string {
 	return fmt.Sprintf("missing schemas with URIs: %v", e.URIs)
 }
