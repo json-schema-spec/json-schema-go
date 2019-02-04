@@ -1,5 +1,12 @@
 package jsonschema
 
+import "errors"
+
+// ErrStackOverflow indicates that the evaluator overflowed its internal stack
+// while evaluating a schema. This can arise from schemas that have cyclical
+// definitions using the "$ref" keyword.
+var ErrStackOverflow = errors.New("stack overflow evaluating schema")
+
 // Error represents a union of errors that can arise from parsing and validating
 // JSON Schemas.
 type Error struct {

@@ -82,11 +82,25 @@ func TestValidatorSpec(t *testing.T) {
 							}
 
 							sort.Slice(expected, func(i, j int) bool {
-								return expected[i].SchemaPath.String() < expected[j].SchemaPath.String()
+								a := expected[i]
+								b := expected[j]
+
+								if a.SchemaPath.String() == b.SchemaPath.String() {
+									return a.InstancePath.String() < b.InstancePath.String()
+								}
+
+								return a.SchemaPath.String() < b.SchemaPath.String()
 							})
 
 							sort.Slice(result.Errors, func(i, j int) bool {
-								return result.Errors[i].SchemaPath.String() < result.Errors[j].SchemaPath.String()
+								a := result.Errors[i]
+								b := result.Errors[j]
+
+								if a.SchemaPath.String() == b.SchemaPath.String() {
+									return a.InstancePath.String() < b.InstancePath.String()
+								}
+
+								return a.SchemaPath.String() < b.SchemaPath.String()
 							})
 
 							assert.Equal(t, expected, result.Errors)

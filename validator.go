@@ -7,16 +7,22 @@ import (
 	"github.com/ucarion/json-pointer"
 )
 
+// DefaultMaxStackDepth is the default maximum number of cross-references a
+// Validator will follow before returning ErrStackOverflow.
+const DefaultMaxStackDepth = 128
+
 // Validator compiles schemas and evaluates instances.
 type Validator struct {
-	schemas  []map[string]interface{}
-	registry registry
+	schemas       []map[string]interface{}
+	registry      registry
+	maxStackDepth int
 }
 
 // ValidationResult contains information on whether an instance successfully
 // validated, as well as any relevant validation errors.
 type ValidationResult struct {
-	Errors []ValidationError
+	Errors     []ValidationError
+	Overflowed bool
 }
 
 // ValidationError is a single error during validation.
@@ -46,7 +52,8 @@ type ValidationError struct {
 // times in the list.
 func NewValidator(schemas []map[string]interface{}) (Validator, []url.URL, error) {
 	v := Validator{
-		schemas: schemas,
+		schemas:       schemas,
+		maxStackDepth: DefaultMaxStackDepth,
 	}
 
 	missingURIs, err := v.seal()
@@ -114,7 +121,7 @@ func (v *Validator) seal() ([]url.URL, error) {
 // Validator.
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
 	id := url.URL{}
-	vm := newVM(v.registry)
+	vm := newVM(v.registry, v.maxStackDepth)
 
 	err := vm.Exec(id, instance)
 	if err != nil {

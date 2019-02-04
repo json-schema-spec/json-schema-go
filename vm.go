@@ -14,6 +14,7 @@ import (
 const epsilon = 1e-3
 
 type vm struct {
+	// registry holds an arena of schemas
 	registry registry
 
 	// stack holds state used for error-message generation
@@ -21,6 +22,9 @@ type vm struct {
 
 	// errors holds all the errors to be produced
 	errors vmErrors
+
+	// maxStackDepth is the most number of $ref-s that can be followed at once
+	maxStackDepth int
 }
 
 type vmErrors struct {
@@ -53,7 +57,7 @@ type schemaStack struct {
 	tokens []string
 }
 
-func newVM(registry registry) vm {
+func newVM(registry registry, maxStackDepth int) vm {
 	return vm{
 		registry: registry,
 		stack: stack{
@@ -64,6 +68,7 @@ func newVM(registry registry) vm {
 			hasErrors: false,
 			errors:    []ValidationError{},
 		},
+		maxStackDepth: maxStackDepth,
 	}
 }
 
@@ -87,25 +92,33 @@ func (vm *vm) Exec(uri url.URL, instance interface{}) error {
 	}
 
 	vm.pushNewSchema(uri, fragPtr.Tokens)
-	vm.execSchema(schema, instance)
-	return nil
+	return vm.execSchema(schema, instance)
 }
 
-func (vm *vm) execSchema(schema schema, instance interface{}) {
+func (vm *vm) execSchema(schema schema, instance interface{}) error {
 	if schema.Ref.IsSet {
+		if len(vm.stack.schemas) == vm.maxStackDepth {
+			return ErrStackOverflow
+		}
+
 		refSchema := vm.registry.GetIndex(schema.Ref.Schema)
 
 		schemaTokens := make([]string, len(schema.Ref.Ptr.Tokens))
 		copy(schemaTokens, schema.Ref.Ptr.Tokens)
 
 		vm.pushNewSchema(schema.Ref.BaseURI, schemaTokens)
-		vm.execSchema(refSchema, instance)
+		if err := vm.execSchema(refSchema, instance); err != nil {
+			return err
+		}
 		vm.popSchema()
 	}
 
 	if schema.Not.IsSet {
 		notSchema := vm.registry.GetIndex(schema.Not.Schema)
-		notErrors := vm.psuedoExec(notSchema, instance)
+		notErrors, err := vm.pseudoExec(notSchema, instance)
+		if err != nil {
+			return err
+		}
 
 		if !notErrors {
 			vm.pushSchemaToken("not")
@@ -116,14 +129,19 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 
 	if schema.If.IsSet {
 		ifSchema := vm.registry.GetIndex(schema.If.Schema)
-		ifErrors := vm.psuedoExec(ifSchema, instance)
+		ifErrors, err := vm.pseudoExec(ifSchema, instance)
+		if err != nil {
+			return err
+		}
 
 		if !ifErrors {
 			if schema.Then.IsSet {
 				thenSchema := vm.registry.GetIndex(schema.Then.Schema)
 
 				vm.pushSchemaToken("then")
-				vm.execSchema(thenSchema, instance)
+				if err := vm.execSchema(thenSchema, instance); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		} else {
@@ -131,7 +149,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				elseSchema := vm.registry.GetIndex(schema.Else.Schema)
 
 				vm.pushSchemaToken("else")
-				vm.execSchema(elseSchema, instance)
+				if err := vm.execSchema(elseSchema, instance); err != nil {
+					return err
+				}
 				vm.popSchemaToken()
 			}
 		}
@@ -169,7 +189,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			token := strconv.FormatInt(int64(i), 10)
 
 			vm.pushSchemaToken(token)
-			vm.execSchema(allOfSchema, instance)
+			if err := vm.execSchema(allOfSchema, instance); err != nil {
+				return err
+			}
 			vm.popSchemaToken()
 		}
 
@@ -180,7 +202,10 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		anyOfOk := false
 		for _, index := range schema.AnyOf.Schemas {
 			anyOfSchema := vm.registry.GetIndex(index)
-			anyOfErrors := vm.psuedoExec(anyOfSchema, instance)
+			anyOfErrors, err := vm.pseudoExec(anyOfSchema, instance)
+			if err != nil {
+				return err
+			}
 
 			if !anyOfErrors {
 				anyOfOk = true
@@ -199,7 +224,10 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		oneOfOk := false
 		for _, index := range schema.OneOf.Schemas {
 			oneOfSchema := vm.registry.GetIndex(index)
-			oneOfErrors := vm.psuedoExec(oneOfSchema, instance)
+			oneOfErrors, err := vm.pseudoExec(oneOfSchema, instance)
+			if err != nil {
+				return err
+			}
 
 			if !oneOfErrors {
 				if oneOfOk {
@@ -356,7 +384,10 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			containsOk := false
 			for _, elem := range val {
 				containsSchema := vm.registry.GetIndex(schema.Contains.Schema)
-				containsErrors := vm.psuedoExec(containsSchema, elem)
+				containsErrors, err := vm.pseudoExec(containsSchema, elem)
+				if err != nil {
+					return err
+				}
 
 				if !containsErrors {
 					containsOk = true
@@ -378,7 +409,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 				itemSchema := vm.registry.GetIndex(schema.Items.Schemas[0])
 				for i, elem := range val {
 					vm.pushInstanceToken(strconv.FormatInt(int64(i), 10))
-					vm.execSchema(itemSchema, elem)
+					if err := vm.execSchema(itemSchema, elem); err != nil {
+						return err
+					}
 					vm.popInstanceToken()
 				}
 				vm.popSchemaToken()
@@ -390,7 +423,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 
 					vm.pushInstanceToken(token)
 					vm.pushSchemaToken(token)
-					vm.execSchema(itemSchema, val[i])
+					if err := vm.execSchema(itemSchema, val[i]); err != nil {
+						return err
+					}
 					vm.popInstanceToken()
 					vm.popSchemaToken()
 				}
@@ -404,7 +439,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 						token := strconv.FormatInt(int64(i), 10)
 
 						vm.pushInstanceToken(token)
-						vm.execSchema(additionalItemSchema, val[i])
+						if err := vm.execSchema(additionalItemSchema, val[i]); err != nil {
+							return err
+						}
 						vm.popInstanceToken()
 					}
 					vm.popSchemaToken()
@@ -459,7 +496,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 					vm.pushSchemaToken("properties")
 					vm.pushSchemaToken(key)
 					vm.pushInstanceToken(key)
-					vm.execSchema(propertySchema, value)
+					if err := vm.execSchema(propertySchema, value); err != nil {
+						return err
+					}
 					vm.popInstanceToken()
 					vm.popSchemaToken()
 					vm.popSchemaToken()
@@ -475,7 +514,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 						vm.pushSchemaToken("patternProperties")
 						vm.pushSchemaToken(pattern.String())
 						vm.pushInstanceToken(key)
-						vm.execSchema(propertySchema, value)
+						if err := vm.execSchema(propertySchema, value); err != nil {
+							return err
+						}
 						vm.popInstanceToken()
 						vm.popSchemaToken()
 						vm.popSchemaToken()
@@ -488,7 +529,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 
 				vm.pushSchemaToken("additionalProperties")
 				vm.pushInstanceToken(key)
-				vm.execSchema(propertySchema, value)
+				if err := vm.execSchema(propertySchema, value); err != nil {
+					return err
+				}
 				vm.popInstanceToken()
 				vm.popSchemaToken()
 			}
@@ -505,7 +548,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 						propertySchema := vm.registry.GetIndex(dep.Schema)
 
 						vm.pushInstanceToken(key)
-						vm.execSchema(propertySchema, value)
+						if err := vm.execSchema(propertySchema, value); err != nil {
+							return err
+						}
 						vm.popInstanceToken()
 					} else {
 						for i, property := range dep.Properties {
@@ -530,7 +575,9 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 			propertyNameSchema := vm.registry.GetIndex(schema.PropertyNames.Schema)
 			for key := range val {
 				vm.pushInstanceToken(key)
-				vm.execSchema(propertyNameSchema, key)
+				if err := vm.execSchema(propertyNameSchema, key); err != nil {
+					return err
+				}
 				vm.popInstanceToken()
 			}
 
@@ -540,23 +587,28 @@ func (vm *vm) execSchema(schema schema, instance interface{}) {
 		// TODO a better error here
 		panic("unexpected non-json input")
 	}
+
+	return nil
 }
 
-// psuedoExec determines whether a given schema accepts an instance, with the
+// pseudoExec determines whether a given schema accepts an instance, with the
 // guarantee that the vm exits this function in the same state it was in when
 // the function was called.
-func (vm *vm) psuedoExec(schema schema, instance interface{}) bool {
+func (vm *vm) pseudoExec(schema schema, instance interface{}) (bool, error) {
 	prevErrors := vm.errors
 	vm.errors = vmErrors{
 		hasErrors: false,
 		errors:    []ValidationError{},
 	}
 
-	vm.execSchema(schema, instance)
+	if err := vm.execSchema(schema, instance); err != nil {
+		return false, err
+	}
+
 	pseudoErrors := vm.errors
 	vm.errors = prevErrors
 
-	return pseudoErrors.hasErrors
+	return pseudoErrors.hasErrors, nil
 }
 
 func (vm *vm) pushNewSchema(id url.URL, tokens []string) {

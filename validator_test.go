@@ -627,3 +627,15 @@ func TestValidatorSeal(t *testing.T) {
 		})
 	}
 }
+
+func TestValidatorOverflow(t *testing.T) {
+	schema := map[string]interface{}{
+		"$ref": "#",
+	}
+
+	validator, _, err := NewValidator([]map[string]interface{}{schema})
+	assert.NoError(t, err)
+
+	_, err = validator.Validate(nil)
+	assert.Equal(t, ErrStackOverflow, err)
+}
