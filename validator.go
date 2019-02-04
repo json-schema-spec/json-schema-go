@@ -38,6 +38,15 @@ type ValidationResult struct {
 	Overflowed bool
 }
 
+// IsValid checks whether the result of schema validation found the instance to
+// be valid.
+//
+// Under the hood, this method is merely a convience function for checking
+// whether the Errors field of ValidationResult is empty.
+func (r ValidationResult) IsValid() bool {
+	return len(r.Errors) == 0
+}
+
 // ValidationError is a single error during validation.
 type ValidationError struct {
 	// A JSON Pointer to the part of the instance which was rejected.

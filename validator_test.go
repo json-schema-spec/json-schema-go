@@ -618,3 +618,16 @@ func TestValidatorMaxErrors(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResult, result.Errors)
 }
+
+func TestValidatorIsValid(t *testing.T) {
+	valid := ValidationResult{
+		Errors: make([]ValidationError, 0),
+	}
+
+	invalid := ValidationResult{
+		Errors: make([]ValidationError, 1),
+	}
+
+	assert.True(t, valid.IsValid())
+	assert.False(t, invalid.IsValid())
+}
