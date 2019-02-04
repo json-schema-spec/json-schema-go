@@ -29,7 +29,7 @@ func TestValidatorSeal(t *testing.T) {
 					"type": 3,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"type not a valid string",
@@ -38,7 +38,7 @@ func TestValidatorSeal(t *testing.T) {
 					"type": "invalid",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"items value not object",
@@ -47,7 +47,7 @@ func TestValidatorSeal(t *testing.T) {
 					"items": "foo",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"items value empty array",
@@ -67,7 +67,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"references to non-existent URIs",
@@ -103,7 +103,7 @@ func TestValidatorSeal(t *testing.T) {
 					"enum": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number multipleOf value",
@@ -112,7 +112,7 @@ func TestValidatorSeal(t *testing.T) {
 					"multipleOf": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number maximum value",
@@ -121,7 +121,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maximum": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number minimum value",
@@ -130,7 +130,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minimum": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number exclusiveMaximum value",
@@ -139,7 +139,7 @@ func TestValidatorSeal(t *testing.T) {
 					"exclusiveMaximum": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number exclusiveMinimum value",
@@ -148,7 +148,7 @@ func TestValidatorSeal(t *testing.T) {
 					"exclusiveMinimum": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number maxLength value",
@@ -157,7 +157,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxLength": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-int maxLength value",
@@ -166,7 +166,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxLength": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-positive maxLength value",
@@ -175,7 +175,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxLength": -2.0,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number minLength value",
@@ -184,7 +184,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minLength": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-int minLength value",
@@ -193,7 +193,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minLength": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-positive minLength value",
@@ -202,7 +202,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minLength": -2.0,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-string pattern value",
@@ -211,7 +211,7 @@ func TestValidatorSeal(t *testing.T) {
 					"pattern": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-regexp pattern value",
@@ -220,7 +220,7 @@ func TestValidatorSeal(t *testing.T) {
 					"pattern": "[[[",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"element of additionalItems not object",
@@ -231,7 +231,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number maxItems value",
@@ -240,7 +240,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxItems": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-int maxItems value",
@@ -249,7 +249,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxItems": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-positive maxItems value",
@@ -258,7 +258,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxItems": -2.0,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number minItems value",
@@ -267,7 +267,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minItems": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-int minItems value",
@@ -276,7 +276,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minItems": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-positive minItems value",
@@ -285,7 +285,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minItems": -2.0,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-boolean uniqueItems value",
@@ -294,7 +294,7 @@ func TestValidatorSeal(t *testing.T) {
 					"uniqueItems": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"value of contains not object",
@@ -303,7 +303,7 @@ func TestValidatorSeal(t *testing.T) {
 					"contains": "foo",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number maxProperties value",
@@ -312,7 +312,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxProperties": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-int maxProperties value",
@@ -321,7 +321,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxProperties": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-positive maxProperties value",
@@ -330,7 +330,7 @@ func TestValidatorSeal(t *testing.T) {
 					"maxProperties": -2.0,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-number minProperties value",
@@ -339,7 +339,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minProperties": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-int minProperties value",
@@ -348,7 +348,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minProperties": 3.14,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-positive minProperties value",
@@ -357,7 +357,7 @@ func TestValidatorSeal(t *testing.T) {
 					"minProperties": -2.0,
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-list required value",
@@ -366,7 +366,7 @@ func TestValidatorSeal(t *testing.T) {
 					"required": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-string-containing list required value",
@@ -379,7 +379,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object properties value",
@@ -388,7 +388,7 @@ func TestValidatorSeal(t *testing.T) {
 					"properties": "foo",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object value of properties value",
@@ -399,7 +399,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object patternProperties value",
@@ -408,7 +408,7 @@ func TestValidatorSeal(t *testing.T) {
 					"patternProperties": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-regexp patternProperties key",
@@ -419,7 +419,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object patternProperties value",
@@ -430,7 +430,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object additionalProperties value",
@@ -439,7 +439,7 @@ func TestValidatorSeal(t *testing.T) {
 					"additionalProperties": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object dependencies value",
@@ -448,7 +448,7 @@ func TestValidatorSeal(t *testing.T) {
 					"dependencies": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-array and non-object dependencies property value",
@@ -459,7 +459,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"invalid schema dependencies property value",
@@ -472,7 +472,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-string element of dependencies property",
@@ -488,7 +488,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-object value of propertyNames",
@@ -497,7 +497,7 @@ func TestValidatorSeal(t *testing.T) {
 					"propertyNames": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-array value of allOf",
@@ -506,7 +506,7 @@ func TestValidatorSeal(t *testing.T) {
 					"allOf": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-schema element of allOf",
@@ -517,7 +517,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-array value of anyOf",
@@ -526,7 +526,7 @@ func TestValidatorSeal(t *testing.T) {
 					"anyOf": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-schema element of anyOf",
@@ -537,7 +537,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-array value of oneOf",
@@ -546,7 +546,7 @@ func TestValidatorSeal(t *testing.T) {
 					"oneOf": "foobar",
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 		{
 			"non-schema element of oneOf",
@@ -557,7 +557,7 @@ func TestValidatorSeal(t *testing.T) {
 					},
 				},
 			},
-			ErrorInvalidSchema,
+			ErrInvalidSchema,
 		},
 	}
 
@@ -630,4 +630,40 @@ func TestValidatorIsValid(t *testing.T) {
 
 	assert.True(t, valid.IsValid())
 	assert.False(t, invalid.IsValid())
+}
+
+func TestValidatorValidateURI(t *testing.T) {
+	schemas := []map[string]interface{}{
+		map[string]interface{}{
+			"$id":  "http://example.com/foo",
+			"type": "null",
+		},
+		map[string]interface{}{
+			"$id":  "http://example.com/bar",
+			"type": "integer",
+		},
+	}
+
+	validator, err := NewValidator(schemas)
+	assert.NoError(t, err)
+
+	uriFoo, err := url.Parse("http://example.com/foo")
+	assert.NoError(t, err)
+
+	result, err := validator.ValidateURI(*uriFoo, nil)
+	assert.NoError(t, err)
+	assert.True(t, result.IsValid())
+
+	uriBar, err := url.Parse("http://example.com/bar")
+	assert.NoError(t, err)
+
+	result, err = validator.ValidateURI(*uriBar, nil)
+	assert.NoError(t, err)
+	assert.False(t, result.IsValid())
+
+	uriBaz, err := url.Parse("http://example.com/baz")
+	assert.NoError(t, err)
+
+	_, err = validator.ValidateURI(*uriBaz, nil)
+	assert.Equal(t, ErrNoSuchSchema, err)
 }

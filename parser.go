@@ -59,7 +59,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		if ok {
 			idStr, ok := idValue.(string)
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			uri, err := url.Parse(idStr)
@@ -76,12 +76,12 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		refStr, ok := refValue.(string)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		uri, err := p.baseURI.Parse(refStr)
 		if err != nil {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		refBaseURI := *uri
@@ -114,7 +114,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			p.Pop()
 		default:
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 	}
 
@@ -134,7 +134,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			p.Pop()
 		default:
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 	}
 
@@ -154,7 +154,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			p.Pop()
 		default:
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 	}
 
@@ -174,7 +174,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			p.Pop()
 		default:
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 	}
 
@@ -198,7 +198,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 			for i, t := range typ {
 				t, ok := t.(string)
 				if !ok {
-					return -1, ErrorInvalidSchema
+					return -1, ErrInvalidSchema
 				}
 
 				jsonTyp, err := parseJSONType(t)
@@ -209,7 +209,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 				s.Type.Types[i] = jsonTyp
 			}
 		default:
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 	}
 
@@ -241,7 +241,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 				item, ok := item.(map[string]interface{})
 				if !ok {
-					return -1, ErrorInvalidSchema
+					return -1, ErrInvalidSchema
 				}
 
 				subSchema, err := p.Parse(item)
@@ -255,7 +255,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			p.Pop()
 		default:
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 	}
 
@@ -269,7 +269,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		enumArray, ok := enumValue.([]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.Enum.IsSet = true
@@ -280,7 +280,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		multipleOfNumber, ok := multipleOfValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MultipleOf.IsSet = true
@@ -291,7 +291,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		maximumNumber, ok := maximumValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.Maximum.IsSet = true
@@ -302,7 +302,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		minimumNumber, ok := minimumValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.Minimum.IsSet = true
@@ -313,7 +313,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		exclusiveMaximumNumber, ok := exclusiveMaximumValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.ExclusiveMaximum.IsSet = true
@@ -324,7 +324,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		exclusiveMinimumNumber, ok := exclusiveMinimumValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.ExclusiveMinimum.IsSet = true
@@ -335,16 +335,16 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		maxLengthNumber, ok := maxLengthValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		maxLengthInt, rem := math.Modf(maxLengthNumber)
 		if rem > epsilon {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		if maxLengthInt < 0 {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MaxLength.IsSet = true
@@ -355,16 +355,16 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		minLengthNumber, ok := minLengthValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		minLengthInt, rem := math.Modf(minLengthNumber)
 		if rem > epsilon {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		if minLengthInt < 0 {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MinLength.IsSet = true
@@ -375,12 +375,12 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		patternString, ok := patternValue.(string)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		patternRegexp, err := regexp.Compile(patternString)
 		if err != nil {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.Pattern.IsSet = true
@@ -391,7 +391,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		additionalItemsObject, ok := additionalItemsValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("additionalItems")
@@ -411,16 +411,16 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		maxItemsNumber, ok := maxItemsValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		maxItemsInt, rem := math.Modf(maxItemsNumber)
 		if rem > epsilon {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		if maxItemsInt < 0 {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MaxItems.IsSet = true
@@ -431,16 +431,16 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		minItemsNumber, ok := minItemsValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		minItemsInt, rem := math.Modf(minItemsNumber)
 		if rem > epsilon {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		if minItemsInt < 0 {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MinItems.IsSet = true
@@ -451,7 +451,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		uniqueItemsBool, ok := uniqueItemsValue.(bool)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.UniqueItems.IsSet = true
@@ -462,7 +462,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		containsObject, ok := containsValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("contains")
@@ -482,16 +482,16 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		maxPropertiesNumber, ok := maxPropertiesValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		maxPropertiesInt, rem := math.Modf(maxPropertiesNumber)
 		if rem > epsilon {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		if maxPropertiesInt < 0 {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MaxProperties.IsSet = true
@@ -502,16 +502,16 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		minPropertiesNumber, ok := minPropertiesValue.(float64)
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		minPropertiesInt, rem := math.Modf(minPropertiesNumber)
 		if rem > epsilon {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		if minPropertiesInt < 0 {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		s.MinProperties.IsSet = true
@@ -522,14 +522,14 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		requiredArray, ok := requiredValue.([]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		properties := []string{}
 		for _, elem := range requiredArray {
 			elemString, ok := elem.(string)
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			properties = append(properties, elemString)
@@ -543,7 +543,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		propertiesObject, ok := propertiesValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("properties")
@@ -552,7 +552,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		for property, elem := range propertiesObject {
 			elemObject, ok := elem.(map[string]interface{})
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			p.Push(property)
@@ -576,7 +576,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		patternPropertiesObject, ok := patternPropertiesValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("patternProperties")
@@ -585,12 +585,12 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 		for property, elem := range patternPropertiesObject {
 			elemObject, ok := elem.(map[string]interface{})
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			propertyRegexp, err := regexp.Compile(property)
 			if err != nil {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			p.Push(property)
@@ -614,7 +614,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		additionalPropertiesObject, ok := additionalPropertiesValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("additionalProperties")
@@ -634,7 +634,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		dependenciesObject, ok := dependenciesValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("dependencies")
@@ -659,7 +659,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 				for _, property := range val {
 					propertyString, ok := property.(string)
 					if !ok {
-						return -1, ErrorInvalidSchema
+						return -1, ErrInvalidSchema
 					}
 
 					properties = append(properties, propertyString)
@@ -670,7 +670,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 					Properties: properties,
 				}
 			default:
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			p.Pop()
@@ -686,7 +686,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		propertyNamesObject, ok := propertyNamesValue.(map[string]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("propertyNames")
@@ -706,7 +706,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		allOfArray, ok := allOfValue.([]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("allOf")
@@ -718,7 +718,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			schemaObject, ok := schemaValue.(map[string]interface{})
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			subSchema, err := p.Parse(schemaObject)
@@ -737,7 +737,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		anyOfArray, ok := anyOfValue.([]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("anyOf")
@@ -749,7 +749,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			schemaObject, ok := schemaValue.(map[string]interface{})
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			subSchema, err := p.Parse(schemaObject)
@@ -768,7 +768,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 	if ok {
 		oneOfArray, ok := oneOfValue.([]interface{})
 		if !ok {
-			return -1, ErrorInvalidSchema
+			return -1, ErrInvalidSchema
 		}
 
 		p.Push("oneOf")
@@ -780,7 +780,7 @@ func (p *parser) Parse(input map[string]interface{}) (int, error) {
 
 			schemaObject, ok := schemaValue.(map[string]interface{})
 			if !ok {
-				return -1, ErrorInvalidSchema
+				return -1, ErrInvalidSchema
 			}
 
 			subSchema, err := p.Parse(schemaObject)
@@ -816,6 +816,6 @@ func parseJSONType(typ string) (jsonType, error) {
 	case "object":
 		return jsonTypeObject, nil
 	default:
-		return 0, ErrorInvalidSchema
+		return 0, ErrInvalidSchema
 	}
 }

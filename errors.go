@@ -11,8 +11,12 @@ import (
 // definitions using the "$ref" keyword.
 var ErrStackOverflow = errors.New("stack overflow evaluating schema")
 
-// ErrorInvalidSchema indicates that an inputted schema was invalid.
-var ErrorInvalidSchema = errors.New("invalid schema")
+// ErrInvalidSchema indicates that an inputted schema was invalid.
+var ErrInvalidSchema = errors.New("invalid schema")
+
+// ErrNoSuchSchema indicates that no schema with the given URI was known to the
+// validator.
+var ErrNoSuchSchema = errors.New("no schema exists with the given URI")
 
 // ErrMissingURIs indicates that some schemas were referred to, but were not
 // known to the Validator.

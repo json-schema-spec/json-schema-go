@@ -2,7 +2,6 @@ package jsonschema
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"net/url"
 	"reflect"
@@ -88,13 +87,11 @@ func (vm *vm) ValidationResult() ValidationResult {
 func (vm *vm) Exec(uri url.URL, instance interface{}) error {
 	schema, ok := vm.registry.Get(uri)
 	if !ok {
-		// TODO custom error types
-		return fmt.Errorf("no schema with uri: %#v", uri)
+		return ErrNoSuchSchema
 	}
 
 	fragPtr, err := jsonpointer.New(uri.Fragment)
 	if err != nil {
-		// TODO wrap
 		return err
 	}
 

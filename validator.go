@@ -128,7 +128,7 @@ func (v *Validator) seal() error {
 
 				refSchemaObject, ok := (*rawRefSchema).(map[string]interface{})
 				if !ok {
-					return ErrorInvalidSchema
+					return ErrInvalidSchema
 				}
 
 				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, refSchemaObject)
@@ -153,11 +153,21 @@ func (v *Validator) seal() error {
 
 // Validate evaluates the given instance against the default schema of the
 // Validator.
+//
+// If no default schema exists for the validator, ErrNoSuchSchema is returned.
 func (v *Validator) Validate(instance interface{}) (ValidationResult, error) {
-	id := url.URL{}
+	return v.ValidateURI(url.URL{}, instance)
+}
+
+// ValidateURI evaluates the given instance against the schema identified by the
+// given URI.
+//
+// If no schema with the given URI exists for the validator, ErrNoSuchSchema is
+// returned.
+func (v *Validator) ValidateURI(uri url.URL, instance interface{}) (ValidationResult, error) {
 	vm := newVM(v.registry, v.maxStackDepth, v.maxErrors)
 
-	err := vm.Exec(id, instance)
+	err := vm.Exec(uri, instance)
 	if err != nil {
 		return ValidationResult{}, err
 	}
