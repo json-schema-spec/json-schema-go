@@ -12,19 +12,19 @@ import (
 func TestValidatorSeal(t *testing.T) {
 	testCases := []struct {
 		name    string
-		schemas []map[string]interface{}
+		schemas []interface{}
 		err     error
 	}{
 		{
 			"empty object",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{},
 			},
 			nil,
 		},
 		{
 			"type not string",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"type": 3,
 				},
@@ -33,7 +33,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"type not a valid string",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"type": "invalid",
 				},
@@ -42,7 +42,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"items value not object",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"items": "foo",
 				},
@@ -51,7 +51,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"items value empty array",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"items": []interface{}{},
 				},
@@ -60,7 +60,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"element of items not object",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"items": []interface{}{
 						"foo",
@@ -71,7 +71,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"references to non-existent URIs",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"$ref": "http://example.com/1",
 					"items": []interface{}{
@@ -98,7 +98,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-array enum value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"enum": "foobar",
 				},
@@ -107,7 +107,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number multipleOf value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"multipleOf": "foobar",
 				},
@@ -116,7 +116,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number maximum value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maximum": "foobar",
 				},
@@ -125,7 +125,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number minimum value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minimum": "foobar",
 				},
@@ -134,7 +134,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number exclusiveMaximum value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"exclusiveMaximum": "foobar",
 				},
@@ -143,7 +143,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number exclusiveMinimum value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"exclusiveMinimum": "foobar",
 				},
@@ -152,7 +152,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number maxLength value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxLength": "foobar",
 				},
@@ -161,7 +161,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-int maxLength value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxLength": 3.14,
 				},
@@ -170,7 +170,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-positive maxLength value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxLength": -2.0,
 				},
@@ -179,7 +179,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number minLength value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minLength": "foobar",
 				},
@@ -188,7 +188,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-int minLength value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minLength": 3.14,
 				},
@@ -197,7 +197,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-positive minLength value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minLength": -2.0,
 				},
@@ -206,7 +206,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-string pattern value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"pattern": 3.14,
 				},
@@ -215,7 +215,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-regexp pattern value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"pattern": "[[[",
 				},
@@ -224,7 +224,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"element of additionalItems not object",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"additionalItems": []interface{}{
 						"foo",
@@ -235,7 +235,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number maxItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxItems": "foobar",
 				},
@@ -244,7 +244,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-int maxItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxItems": 3.14,
 				},
@@ -253,7 +253,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-positive maxItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxItems": -2.0,
 				},
@@ -262,7 +262,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number minItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minItems": "foobar",
 				},
@@ -271,7 +271,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-int minItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minItems": 3.14,
 				},
@@ -280,7 +280,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-positive minItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minItems": -2.0,
 				},
@@ -289,7 +289,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-boolean uniqueItems value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"uniqueItems": "foobar",
 				},
@@ -298,7 +298,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"value of contains not object",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"contains": "foo",
 				},
@@ -307,7 +307,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number maxProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxProperties": "foobar",
 				},
@@ -316,7 +316,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-int maxProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxProperties": 3.14,
 				},
@@ -325,7 +325,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-positive maxProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"maxProperties": -2.0,
 				},
@@ -334,7 +334,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-number minProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minProperties": "foobar",
 				},
@@ -343,7 +343,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-int minProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minProperties": 3.14,
 				},
@@ -352,7 +352,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-positive minProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"minProperties": -2.0,
 				},
@@ -361,7 +361,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-list required value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"required": "foobar",
 				},
@@ -370,7 +370,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-string-containing list required value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"required": []interface{}{
 						"foo",
@@ -383,7 +383,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object properties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"properties": "foo",
 				},
@@ -392,7 +392,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object value of properties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"properties": map[string]interface{}{
 						"foo": "bar",
@@ -403,7 +403,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object patternProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"patternProperties": "foobar",
 				},
@@ -412,7 +412,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-regexp patternProperties key",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"patternProperties": map[string]interface{}{
 						"[[[": map[string]interface{}{},
@@ -423,7 +423,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object patternProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"patternProperties": map[string]interface{}{
 						"[[[": "foobar",
@@ -434,7 +434,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object additionalProperties value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"additionalProperties": "foobar",
 				},
@@ -443,7 +443,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object dependencies value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"dependencies": "foobar",
 				},
@@ -452,7 +452,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-array and non-object dependencies property value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"dependencies": map[string]interface{}{
 						"foo": 3,
@@ -463,7 +463,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"invalid schema dependencies property value",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"dependencies": map[string]interface{}{
 						"foo": map[string]interface{}{
@@ -476,7 +476,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-string element of dependencies property",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"dependencies": map[string]interface{}{
 						"foo": []interface{}{
@@ -492,7 +492,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-object value of propertyNames",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"propertyNames": "foobar",
 				},
@@ -501,7 +501,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-array value of allOf",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"allOf": "foobar",
 				},
@@ -510,7 +510,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-schema element of allOf",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"allOf": []interface{}{
 						"foobar",
@@ -521,7 +521,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-array value of anyOf",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"anyOf": "foobar",
 				},
@@ -530,7 +530,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-schema element of anyOf",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"anyOf": []interface{}{
 						"foobar",
@@ -541,7 +541,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-array value of oneOf",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"oneOf": "foobar",
 				},
@@ -550,7 +550,7 @@ func TestValidatorSeal(t *testing.T) {
 		},
 		{
 			"non-schema element of oneOf",
-			[]map[string]interface{}{
+			[]interface{}{
 				map[string]interface{}{
 					"oneOf": []interface{}{
 						"foobar",
@@ -570,7 +570,7 @@ func TestValidatorSeal(t *testing.T) {
 }
 
 func TestValidatorOverflow(t *testing.T) {
-	schemas := []map[string]interface{}{
+	schemas := []interface{}{
 		map[string]interface{}{
 			"$ref": "#",
 		},
@@ -584,7 +584,7 @@ func TestValidatorOverflow(t *testing.T) {
 }
 
 func TestValidatorMaxErrors(t *testing.T) {
-	schemas := []map[string]interface{}{
+	schemas := []interface{}{
 		map[string]interface{}{
 			"allOf": []interface{}{
 				map[string]interface{}{
@@ -633,7 +633,7 @@ func TestValidatorIsValid(t *testing.T) {
 }
 
 func TestValidatorValidateURI(t *testing.T) {
-	schemas := []map[string]interface{}{
+	schemas := []interface{}{
 		map[string]interface{}{
 			"$id":  "http://example.com/foo",
 			"type": "null",

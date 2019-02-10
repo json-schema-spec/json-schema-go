@@ -10,16 +10,15 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/ucarion/json-pointer"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/ucarion/json-pointer"
 )
 
 type testCase struct {
-	Name      string                   `json:"name"`
-	Registry  []map[string]interface{} `json:"registry"`
-	Schema    map[string]interface{}   `json:"schema"`
-	Instances []instanceCase           `json:"instances"`
+	Name      string         `json:"name"`
+	Registry  []interface{}  `json:"registry"`
+	Schema    interface{}    `json:"schema"`
+	Instances []instanceCase `json:"instances"`
 }
 
 type instanceCase struct {
@@ -53,7 +52,7 @@ func TestValidatorSpec(t *testing.T) {
 
 			for _, tt := range testCases {
 				t.Run(tt.Name, func(t *testing.T) {
-					schemas := []map[string]interface{}{tt.Schema}
+					schemas := []interface{}{tt.Schema}
 					schemas = append(schemas, tt.Registry...)
 					validator, err := NewValidator(schemas)
 

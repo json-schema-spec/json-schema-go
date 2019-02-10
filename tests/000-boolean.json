@@ -1,0 +1,29 @@
+[
+  {
+    "name": "boolean schema true accepts all inputs",
+    "registry": [],
+    "schema": true,
+    "instances": [
+      {
+        "instance": "foo",
+        "errors": []
+      }
+    ]
+  },
+  {
+    "name": "boolean schema false rejects all inputs",
+    "registry": [],
+    "schema": false,
+    "instances": [
+      {
+        "instance": "foo",
+        "errors": [
+          {
+            "schemaPath": "",
+            "instancePath": ""
+          }
+        ]
+      }
+    ]
+  }
+]

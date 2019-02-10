@@ -106,6 +106,16 @@ func (vm *vm) Exec(uri url.URL, instance interface{}) error {
 }
 
 func (vm *vm) execSchema(schema schema, instance interface{}) error {
+	if schema.Bool.IsSet {
+		if !schema.Bool.Value {
+			if err := vm.reportError(); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
 	if schema.Ref.IsSet {
 		if len(vm.stack.schemas) == vm.maxStackDepth {
 			return ErrStackOverflow

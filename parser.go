@@ -16,11 +16,11 @@ type parser struct {
 	tokens   []string
 }
 
-func parseRootSchema(registry *registry, input map[string]interface{}) (schema, error) {
+func parseRootSchema(registry *registry, input interface{}) (schema, error) {
 	return parseSubSchema(registry, url.URL{}, []string{}, input)
 }
 
-func parseSubSchema(registry *registry, baseURI url.URL, tokens []string, input map[string]interface{}) (schema, error) {
+func parseSubSchema(registry *registry, baseURI url.URL, tokens []string, input interface{}) (schema, error) {
 	p := parser{
 		registry: registry,
 		tokens:   tokens,
@@ -51,748 +51,756 @@ func (p *parser) URI() url.URL {
 	return url
 }
 
-func (p *parser) Parse(input map[string]interface{}) (int, error) {
+func (p *parser) Parse(input interface{}) (int, error) {
 	s := schema{}
 
-	if len(p.tokens) == 0 {
-		idValue, ok := input["$id"]
+	switch input := input.(type) {
+	case bool:
+		s.Bool.IsSet = true
+		s.Bool.Value = input
+	case map[string]interface{}:
+		if len(p.tokens) == 0 {
+			idValue, ok := input["$id"]
+			if ok {
+				idStr, ok := idValue.(string)
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				uri, err := url.Parse(idStr)
+				if err != nil {
+					return -1, errors.New("$id is not valid URI")
+				}
+
+				p.baseURI = *uri
+				s.ID = *uri
+			}
+		}
+
+		refValue, ok := input["$ref"]
 		if ok {
-			idStr, ok := idValue.(string)
+			refStr, ok := refValue.(string)
 			if !ok {
 				return -1, ErrInvalidSchema
 			}
 
-			uri, err := url.Parse(idStr)
-			if err != nil {
-				return -1, errors.New("$id is not valid URI")
-			}
-
-			p.baseURI = *uri
-			s.ID = *uri
-		}
-	}
-
-	refValue, ok := input["$ref"]
-	if ok {
-		refStr, ok := refValue.(string)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		uri, err := p.baseURI.Parse(refStr)
-		if err != nil {
-			return -1, ErrInvalidSchema
-		}
-
-		refBaseURI := *uri
-		refBaseURI.Fragment = ""
-
-		ptr, err := jsonpointer.New(uri.Fragment)
-		if err != nil {
-			return -1, errors.New("$ref fragment is not a valid JSON Pointer")
-		}
-
-		s.Ref.IsSet = true
-		s.Ref.URI = *uri
-		s.Ref.BaseURI = refBaseURI
-		s.Ref.Ptr = ptr
-	}
-
-	notValue, ok := input["not"]
-	if ok {
-		switch not := notValue.(type) {
-		case map[string]interface{}:
-			p.Push("not")
-
-			subSchema, err := p.Parse(not)
-			if err != nil {
-				return -1, err
-			}
-
-			s.Not.IsSet = true
-			s.Not.Schema = subSchema
-
-			p.Pop()
-		default:
-			return -1, ErrInvalidSchema
-		}
-	}
-
-	ifValue, ok := input["if"]
-	if ok {
-		switch ifx := ifValue.(type) {
-		case map[string]interface{}:
-			p.Push("if")
-
-			subSchema, err := p.Parse(ifx)
-			if err != nil {
-				return -1, err
-			}
-
-			s.If.IsSet = true
-			s.If.Schema = subSchema
-
-			p.Pop()
-		default:
-			return -1, ErrInvalidSchema
-		}
-	}
-
-	thenValue, ok := input["then"]
-	if ok {
-		switch then := thenValue.(type) {
-		case map[string]interface{}:
-			p.Push("then")
-
-			subSchema, err := p.Parse(then)
-			if err != nil {
-				return -1, err
-			}
-
-			s.Then.IsSet = true
-			s.Then.Schema = subSchema
-
-			p.Pop()
-		default:
-			return -1, ErrInvalidSchema
-		}
-	}
-
-	elseValue, ok := input["else"]
-	if ok {
-		switch elsex := elseValue.(type) {
-		case map[string]interface{}:
-			p.Push("else")
-
-			subSchema, err := p.Parse(elsex)
-			if err != nil {
-				return -1, err
-			}
-
-			s.Else.IsSet = true
-			s.Else.Schema = subSchema
-
-			p.Pop()
-		default:
-			return -1, ErrInvalidSchema
-		}
-	}
-
-	typeValue, ok := input["type"]
-	if ok {
-		switch typ := typeValue.(type) {
-		case string:
-			jsonTyp, err := parseJSONType(typ)
-			if err != nil {
-				return -1, err
-			}
-
-			s.Type.IsSet = true
-			s.Type.IsSingle = true
-			s.Type.Types = []jsonType{jsonTyp}
-		case []interface{}:
-			s.Type.IsSet = true
-			s.Type.IsSingle = false
-			s.Type.Types = make([]jsonType, len(typ))
-
-			for i, t := range typ {
-				t, ok := t.(string)
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
-				jsonTyp, err := parseJSONType(t)
-				if err != nil {
-					return -1, err
-				}
-
-				s.Type.Types[i] = jsonTyp
-			}
-		default:
-			return -1, ErrInvalidSchema
-		}
-	}
-
-	itemsValue, ok := input["items"]
-	if ok {
-		switch items := itemsValue.(type) {
-		case map[string]interface{}:
-			p.Push("items")
-
-			subSchema, err := p.Parse(items)
-			if err != nil {
-				return -1, err
-			}
-
-			s.Items.IsSet = true
-			s.Items.IsSingle = true
-			s.Items.Schemas = []int{subSchema}
-
-			p.Pop()
-		case []interface{}:
-			p.Push("items")
-
-			s.Items.IsSet = true
-			s.Items.IsSingle = false
-			s.Items.Schemas = make([]int, len(items))
-
-			for i, item := range items {
-				p.Push(strconv.FormatInt(int64(i), 10))
-
-				item, ok := item.(map[string]interface{})
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
-				subSchema, err := p.Parse(item)
-				if err != nil {
-					return -1, err
-				}
-
-				s.Items.Schemas[i] = subSchema
-				p.Pop()
-			}
-
-			p.Pop()
-		default:
-			return -1, ErrInvalidSchema
-		}
-	}
-
-	constValue, ok := input["const"]
-	if ok {
-		s.Const.IsSet = true
-		s.Const.Value = constValue
-	}
-
-	enumValue, ok := input["enum"]
-	if ok {
-		enumArray, ok := enumValue.([]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.Enum.IsSet = true
-		s.Enum.Values = enumArray
-	}
-
-	multipleOfValue, ok := input["multipleOf"]
-	if ok {
-		multipleOfNumber, ok := multipleOfValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MultipleOf.IsSet = true
-		s.MultipleOf.Value = multipleOfNumber
-	}
-
-	maximumValue, ok := input["maximum"]
-	if ok {
-		maximumNumber, ok := maximumValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.Maximum.IsSet = true
-		s.Maximum.Value = maximumNumber
-	}
-
-	minimumValue, ok := input["minimum"]
-	if ok {
-		minimumNumber, ok := minimumValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.Minimum.IsSet = true
-		s.Minimum.Value = minimumNumber
-	}
-
-	exclusiveMaximumValue, ok := input["exclusiveMaximum"]
-	if ok {
-		exclusiveMaximumNumber, ok := exclusiveMaximumValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.ExclusiveMaximum.IsSet = true
-		s.ExclusiveMaximum.Value = exclusiveMaximumNumber
-	}
-
-	exclusiveMinimumValue, ok := input["exclusiveMinimum"]
-	if ok {
-		exclusiveMinimumNumber, ok := exclusiveMinimumValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.ExclusiveMinimum.IsSet = true
-		s.ExclusiveMinimum.Value = exclusiveMinimumNumber
-	}
-
-	maxLengthValue, ok := input["maxLength"]
-	if ok {
-		maxLengthNumber, ok := maxLengthValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		maxLengthInt, rem := math.Modf(maxLengthNumber)
-		if rem > epsilon {
-			return -1, ErrInvalidSchema
-		}
-
-		if maxLengthInt < 0 {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MaxLength.IsSet = true
-		s.MaxLength.Value = int(maxLengthInt)
-	}
-
-	minLengthValue, ok := input["minLength"]
-	if ok {
-		minLengthNumber, ok := minLengthValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		minLengthInt, rem := math.Modf(minLengthNumber)
-		if rem > epsilon {
-			return -1, ErrInvalidSchema
-		}
-
-		if minLengthInt < 0 {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MinLength.IsSet = true
-		s.MinLength.Value = int(minLengthInt)
-	}
-
-	patternValue, ok := input["pattern"]
-	if ok {
-		patternString, ok := patternValue.(string)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		patternRegexp, err := regexp.Compile(patternString)
-		if err != nil {
-			return -1, ErrInvalidSchema
-		}
-
-		s.Pattern.IsSet = true
-		s.Pattern.Value = patternRegexp
-	}
-
-	additionalItemsValue, ok := input["additionalItems"]
-	if ok {
-		additionalItemsObject, ok := additionalItemsValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("additionalItems")
-
-		subSchema, err := p.Parse(additionalItemsObject)
-		if err != nil {
-			return -1, err
-		}
-
-		s.AdditionalItems.IsSet = true
-		s.AdditionalItems.Schema = subSchema
-
-		p.Pop()
-	}
-
-	maxItemsValue, ok := input["maxItems"]
-	if ok {
-		maxItemsNumber, ok := maxItemsValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		maxItemsInt, rem := math.Modf(maxItemsNumber)
-		if rem > epsilon {
-			return -1, ErrInvalidSchema
-		}
-
-		if maxItemsInt < 0 {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MaxItems.IsSet = true
-		s.MaxItems.Value = int(maxItemsInt)
-	}
-
-	minItemsValue, ok := input["minItems"]
-	if ok {
-		minItemsNumber, ok := minItemsValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		minItemsInt, rem := math.Modf(minItemsNumber)
-		if rem > epsilon {
-			return -1, ErrInvalidSchema
-		}
-
-		if minItemsInt < 0 {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MinItems.IsSet = true
-		s.MinItems.Value = int(minItemsInt)
-	}
-
-	uniqueItemsValue, ok := input["uniqueItems"]
-	if ok {
-		uniqueItemsBool, ok := uniqueItemsValue.(bool)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		s.UniqueItems.IsSet = true
-		s.UniqueItems.Value = uniqueItemsBool
-	}
-
-	containsValue, ok := input["contains"]
-	if ok {
-		containsObject, ok := containsValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("contains")
-
-		subSchema, err := p.Parse(containsObject)
-		if err != nil {
-			return -1, err
-		}
-
-		s.Contains.IsSet = true
-		s.Contains.Schema = subSchema
-
-		p.Pop()
-	}
-
-	maxPropertiesValue, ok := input["maxProperties"]
-	if ok {
-		maxPropertiesNumber, ok := maxPropertiesValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		maxPropertiesInt, rem := math.Modf(maxPropertiesNumber)
-		if rem > epsilon {
-			return -1, ErrInvalidSchema
-		}
-
-		if maxPropertiesInt < 0 {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MaxProperties.IsSet = true
-		s.MaxProperties.Value = int(maxPropertiesInt)
-	}
-
-	minPropertiesValue, ok := input["minProperties"]
-	if ok {
-		minPropertiesNumber, ok := minPropertiesValue.(float64)
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		minPropertiesInt, rem := math.Modf(minPropertiesNumber)
-		if rem > epsilon {
-			return -1, ErrInvalidSchema
-		}
-
-		if minPropertiesInt < 0 {
-			return -1, ErrInvalidSchema
-		}
-
-		s.MinProperties.IsSet = true
-		s.MinProperties.Value = int(minPropertiesInt)
-	}
-
-	requiredValue, ok := input["required"]
-	if ok {
-		requiredArray, ok := requiredValue.([]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		properties := []string{}
-		for _, elem := range requiredArray {
-			elemString, ok := elem.(string)
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
-			properties = append(properties, elemString)
-		}
-
-		s.Required.IsSet = true
-		s.Required.Properties = properties
-	}
-
-	propertiesValue, ok := input["properties"]
-	if ok {
-		propertiesObject, ok := propertiesValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("properties")
-
-		schemas := map[string]int{}
-		for property, elem := range propertiesObject {
-			elemObject, ok := elem.(map[string]interface{})
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
-			p.Push(property)
-			subSchema, err := p.Parse(elemObject)
-			if err != nil {
-				return -1, err
-			}
-
-			schemas[property] = subSchema
-
-			p.Pop()
-		}
-
-		s.Properties.IsSet = true
-		s.Properties.Schemas = schemas
-
-		p.Pop()
-	}
-
-	patternPropertiesValue, ok := input["patternProperties"]
-	if ok {
-		patternPropertiesObject, ok := patternPropertiesValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("patternProperties")
-
-		schemas := map[*regexp.Regexp]int{}
-		for property, elem := range patternPropertiesObject {
-			elemObject, ok := elem.(map[string]interface{})
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
-			propertyRegexp, err := regexp.Compile(property)
+			uri, err := p.baseURI.Parse(refStr)
 			if err != nil {
 				return -1, ErrInvalidSchema
 			}
 
-			p.Push(property)
-			subSchema, err := p.Parse(elemObject)
+			refBaseURI := *uri
+			refBaseURI.Fragment = ""
+
+			ptr, err := jsonpointer.New(uri.Fragment)
 			if err != nil {
-				return -1, err
+				return -1, errors.New("$ref fragment is not a valid JSON Pointer")
 			}
 
-			schemas[propertyRegexp] = subSchema
-
-			p.Pop()
+			s.Ref.IsSet = true
+			s.Ref.URI = *uri
+			s.Ref.BaseURI = refBaseURI
+			s.Ref.Ptr = ptr
 		}
 
-		s.PatternProperties.IsSet = true
-		s.PatternProperties.Schemas = schemas
-
-		p.Pop()
-	}
-
-	additionalPropertiesValue, ok := input["additionalProperties"]
-	if ok {
-		additionalPropertiesObject, ok := additionalPropertiesValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("additionalProperties")
-
-		subSchema, err := p.Parse(additionalPropertiesObject)
-		if err != nil {
-			return -1, err
-		}
-
-		s.AdditionalProperties.IsSet = true
-		s.AdditionalProperties.Schema = subSchema
-
-		p.Pop()
-	}
-
-	dependenciesValue, ok := input["dependencies"]
-	if ok {
-		dependenciesObject, ok := dependenciesValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("dependencies")
-
-		dependencies := map[string]schemaDependency{}
-		for key, value := range dependenciesObject {
-			p.Push(key)
-
-			switch val := value.(type) {
+		notValue, ok := input["not"]
+		if ok {
+			switch not := notValue.(type) {
 			case map[string]interface{}:
-				subSchema, err := p.Parse(val)
+				p.Push("not")
+
+				subSchema, err := p.Parse(not)
 				if err != nil {
 					return -1, err
 				}
 
-				dependencies[key] = schemaDependency{
-					IsSchema: true,
-					Schema:   subSchema,
+				s.Not.IsSet = true
+				s.Not.Schema = subSchema
+
+				p.Pop()
+			default:
+				return -1, ErrInvalidSchema
+			}
+		}
+
+		ifValue, ok := input["if"]
+		if ok {
+			switch ifx := ifValue.(type) {
+			case map[string]interface{}:
+				p.Push("if")
+
+				subSchema, err := p.Parse(ifx)
+				if err != nil {
+					return -1, err
 				}
+
+				s.If.IsSet = true
+				s.If.Schema = subSchema
+
+				p.Pop()
+			default:
+				return -1, ErrInvalidSchema
+			}
+		}
+
+		thenValue, ok := input["then"]
+		if ok {
+			switch then := thenValue.(type) {
+			case map[string]interface{}:
+				p.Push("then")
+
+				subSchema, err := p.Parse(then)
+				if err != nil {
+					return -1, err
+				}
+
+				s.Then.IsSet = true
+				s.Then.Schema = subSchema
+
+				p.Pop()
+			default:
+				return -1, ErrInvalidSchema
+			}
+		}
+
+		elseValue, ok := input["else"]
+		if ok {
+			switch elsex := elseValue.(type) {
+			case map[string]interface{}:
+				p.Push("else")
+
+				subSchema, err := p.Parse(elsex)
+				if err != nil {
+					return -1, err
+				}
+
+				s.Else.IsSet = true
+				s.Else.Schema = subSchema
+
+				p.Pop()
+			default:
+				return -1, ErrInvalidSchema
+			}
+		}
+
+		typeValue, ok := input["type"]
+		if ok {
+			switch typ := typeValue.(type) {
+			case string:
+				jsonTyp, err := parseJSONType(typ)
+				if err != nil {
+					return -1, err
+				}
+
+				s.Type.IsSet = true
+				s.Type.IsSingle = true
+				s.Type.Types = []jsonType{jsonTyp}
 			case []interface{}:
-				properties := []string{}
-				for _, property := range val {
-					propertyString, ok := property.(string)
+				s.Type.IsSet = true
+				s.Type.IsSingle = false
+				s.Type.Types = make([]jsonType, len(typ))
+
+				for i, t := range typ {
+					t, ok := t.(string)
 					if !ok {
 						return -1, ErrInvalidSchema
 					}
 
-					properties = append(properties, propertyString)
-				}
+					jsonTyp, err := parseJSONType(t)
+					if err != nil {
+						return -1, err
+					}
 
-				dependencies[key] = schemaDependency{
-					IsSchema:   false,
-					Properties: properties,
+					s.Type.Types[i] = jsonTyp
 				}
 			default:
 				return -1, ErrInvalidSchema
 			}
-
-			p.Pop()
 		}
 
-		s.Dependencies.IsSet = true
-		s.Dependencies.Deps = dependencies
+		itemsValue, ok := input["items"]
+		if ok {
+			switch items := itemsValue.(type) {
+			case map[string]interface{}:
+				p.Push("items")
 
-		p.Pop()
-	}
+				subSchema, err := p.Parse(items)
+				if err != nil {
+					return -1, err
+				}
 
-	propertyNamesValue, ok := input["propertyNames"]
-	if ok {
-		propertyNamesObject, ok := propertyNamesValue.(map[string]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
+				s.Items.IsSet = true
+				s.Items.IsSingle = true
+				s.Items.Schemas = []int{subSchema}
+
+				p.Pop()
+			case []interface{}:
+				p.Push("items")
+
+				s.Items.IsSet = true
+				s.Items.IsSingle = false
+				s.Items.Schemas = make([]int, len(items))
+
+				for i, item := range items {
+					p.Push(strconv.FormatInt(int64(i), 10))
+
+					item, ok := item.(map[string]interface{})
+					if !ok {
+						return -1, ErrInvalidSchema
+					}
+
+					subSchema, err := p.Parse(item)
+					if err != nil {
+						return -1, err
+					}
+
+					s.Items.Schemas[i] = subSchema
+					p.Pop()
+				}
+
+				p.Pop()
+			default:
+				return -1, ErrInvalidSchema
+			}
 		}
 
-		p.Push("propertyNames")
-
-		subSchema, err := p.Parse(propertyNamesObject)
-		if err != nil {
-			return -1, err
+		constValue, ok := input["const"]
+		if ok {
+			s.Const.IsSet = true
+			s.Const.Value = constValue
 		}
 
-		s.PropertyNames.IsSet = true
-		s.PropertyNames.Schema = subSchema
-
-		p.Pop()
-	}
-
-	allOfValue, ok := input["allOf"]
-	if ok {
-		allOfArray, ok := allOfValue.([]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("allOf")
-
-		s.AllOf.IsSet = true
-		s.AllOf.Schemas = make([]int, len(allOfArray))
-		for i, schemaValue := range allOfArray {
-			p.Push(strconv.FormatInt(int64(i), 10))
-
-			schemaObject, ok := schemaValue.(map[string]interface{})
+		enumValue, ok := input["enum"]
+		if ok {
+			enumArray, ok := enumValue.([]interface{})
 			if !ok {
 				return -1, ErrInvalidSchema
 			}
 
-			subSchema, err := p.Parse(schemaObject)
-			if err != nil {
-				return -1, err
-			}
-
-			s.AllOf.Schemas[i] = subSchema
-			p.Pop()
+			s.Enum.IsSet = true
+			s.Enum.Values = enumArray
 		}
 
-		p.Pop()
-	}
-
-	anyOfValue, ok := input["anyOf"]
-	if ok {
-		anyOfArray, ok := anyOfValue.([]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("anyOf")
-
-		s.AnyOf.IsSet = true
-		s.AnyOf.Schemas = make([]int, len(anyOfArray))
-		for i, schemaValue := range anyOfArray {
-			p.Push(strconv.FormatInt(int64(i), 10))
-
-			schemaObject, ok := schemaValue.(map[string]interface{})
+		multipleOfValue, ok := input["multipleOf"]
+		if ok {
+			multipleOfNumber, ok := multipleOfValue.(float64)
 			if !ok {
 				return -1, ErrInvalidSchema
 			}
 
-			subSchema, err := p.Parse(schemaObject)
-			if err != nil {
-				return -1, err
-			}
-
-			s.AnyOf.Schemas[i] = subSchema
-			p.Pop()
+			s.MultipleOf.IsSet = true
+			s.MultipleOf.Value = multipleOfNumber
 		}
 
-		p.Pop()
-	}
-
-	oneOfValue, ok := input["oneOf"]
-	if ok {
-		oneOfArray, ok := oneOfValue.([]interface{})
-		if !ok {
-			return -1, ErrInvalidSchema
-		}
-
-		p.Push("oneOf")
-
-		s.OneOf.IsSet = true
-		s.OneOf.Schemas = make([]int, len(oneOfArray))
-		for i, schemaValue := range oneOfArray {
-			p.Push(strconv.FormatInt(int64(i), 10))
-
-			schemaObject, ok := schemaValue.(map[string]interface{})
+		maximumValue, ok := input["maximum"]
+		if ok {
+			maximumNumber, ok := maximumValue.(float64)
 			if !ok {
 				return -1, ErrInvalidSchema
 			}
 
-			subSchema, err := p.Parse(schemaObject)
+			s.Maximum.IsSet = true
+			s.Maximum.Value = maximumNumber
+		}
+
+		minimumValue, ok := input["minimum"]
+		if ok {
+			minimumNumber, ok := minimumValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			s.Minimum.IsSet = true
+			s.Minimum.Value = minimumNumber
+		}
+
+		exclusiveMaximumValue, ok := input["exclusiveMaximum"]
+		if ok {
+			exclusiveMaximumNumber, ok := exclusiveMaximumValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			s.ExclusiveMaximum.IsSet = true
+			s.ExclusiveMaximum.Value = exclusiveMaximumNumber
+		}
+
+		exclusiveMinimumValue, ok := input["exclusiveMinimum"]
+		if ok {
+			exclusiveMinimumNumber, ok := exclusiveMinimumValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			s.ExclusiveMinimum.IsSet = true
+			s.ExclusiveMinimum.Value = exclusiveMinimumNumber
+		}
+
+		maxLengthValue, ok := input["maxLength"]
+		if ok {
+			maxLengthNumber, ok := maxLengthValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			maxLengthInt, rem := math.Modf(maxLengthNumber)
+			if rem > epsilon {
+				return -1, ErrInvalidSchema
+			}
+
+			if maxLengthInt < 0 {
+				return -1, ErrInvalidSchema
+			}
+
+			s.MaxLength.IsSet = true
+			s.MaxLength.Value = int(maxLengthInt)
+		}
+
+		minLengthValue, ok := input["minLength"]
+		if ok {
+			minLengthNumber, ok := minLengthValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			minLengthInt, rem := math.Modf(minLengthNumber)
+			if rem > epsilon {
+				return -1, ErrInvalidSchema
+			}
+
+			if minLengthInt < 0 {
+				return -1, ErrInvalidSchema
+			}
+
+			s.MinLength.IsSet = true
+			s.MinLength.Value = int(minLengthInt)
+		}
+
+		patternValue, ok := input["pattern"]
+		if ok {
+			patternString, ok := patternValue.(string)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			patternRegexp, err := regexp.Compile(patternString)
+			if err != nil {
+				return -1, ErrInvalidSchema
+			}
+
+			s.Pattern.IsSet = true
+			s.Pattern.Value = patternRegexp
+		}
+
+		additionalItemsValue, ok := input["additionalItems"]
+		if ok {
+			additionalItemsObject, ok := additionalItemsValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("additionalItems")
+
+			subSchema, err := p.Parse(additionalItemsObject)
 			if err != nil {
 				return -1, err
 			}
 
-			s.OneOf.Schemas[i] = subSchema
+			s.AdditionalItems.IsSet = true
+			s.AdditionalItems.Schema = subSchema
+
 			p.Pop()
 		}
 
-		p.Pop()
+		maxItemsValue, ok := input["maxItems"]
+		if ok {
+			maxItemsNumber, ok := maxItemsValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			maxItemsInt, rem := math.Modf(maxItemsNumber)
+			if rem > epsilon {
+				return -1, ErrInvalidSchema
+			}
+
+			if maxItemsInt < 0 {
+				return -1, ErrInvalidSchema
+			}
+
+			s.MaxItems.IsSet = true
+			s.MaxItems.Value = int(maxItemsInt)
+		}
+
+		minItemsValue, ok := input["minItems"]
+		if ok {
+			minItemsNumber, ok := minItemsValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			minItemsInt, rem := math.Modf(minItemsNumber)
+			if rem > epsilon {
+				return -1, ErrInvalidSchema
+			}
+
+			if minItemsInt < 0 {
+				return -1, ErrInvalidSchema
+			}
+
+			s.MinItems.IsSet = true
+			s.MinItems.Value = int(minItemsInt)
+		}
+
+		uniqueItemsValue, ok := input["uniqueItems"]
+		if ok {
+			uniqueItemsBool, ok := uniqueItemsValue.(bool)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			s.UniqueItems.IsSet = true
+			s.UniqueItems.Value = uniqueItemsBool
+		}
+
+		containsValue, ok := input["contains"]
+		if ok {
+			containsObject, ok := containsValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("contains")
+
+			subSchema, err := p.Parse(containsObject)
+			if err != nil {
+				return -1, err
+			}
+
+			s.Contains.IsSet = true
+			s.Contains.Schema = subSchema
+
+			p.Pop()
+		}
+
+		maxPropertiesValue, ok := input["maxProperties"]
+		if ok {
+			maxPropertiesNumber, ok := maxPropertiesValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			maxPropertiesInt, rem := math.Modf(maxPropertiesNumber)
+			if rem > epsilon {
+				return -1, ErrInvalidSchema
+			}
+
+			if maxPropertiesInt < 0 {
+				return -1, ErrInvalidSchema
+			}
+
+			s.MaxProperties.IsSet = true
+			s.MaxProperties.Value = int(maxPropertiesInt)
+		}
+
+		minPropertiesValue, ok := input["minProperties"]
+		if ok {
+			minPropertiesNumber, ok := minPropertiesValue.(float64)
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			minPropertiesInt, rem := math.Modf(minPropertiesNumber)
+			if rem > epsilon {
+				return -1, ErrInvalidSchema
+			}
+
+			if minPropertiesInt < 0 {
+				return -1, ErrInvalidSchema
+			}
+
+			s.MinProperties.IsSet = true
+			s.MinProperties.Value = int(minPropertiesInt)
+		}
+
+		requiredValue, ok := input["required"]
+		if ok {
+			requiredArray, ok := requiredValue.([]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			properties := []string{}
+			for _, elem := range requiredArray {
+				elemString, ok := elem.(string)
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				properties = append(properties, elemString)
+			}
+
+			s.Required.IsSet = true
+			s.Required.Properties = properties
+		}
+
+		propertiesValue, ok := input["properties"]
+		if ok {
+			propertiesObject, ok := propertiesValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("properties")
+
+			schemas := map[string]int{}
+			for property, elem := range propertiesObject {
+				elemObject, ok := elem.(map[string]interface{})
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				p.Push(property)
+				subSchema, err := p.Parse(elemObject)
+				if err != nil {
+					return -1, err
+				}
+
+				schemas[property] = subSchema
+
+				p.Pop()
+			}
+
+			s.Properties.IsSet = true
+			s.Properties.Schemas = schemas
+
+			p.Pop()
+		}
+
+		patternPropertiesValue, ok := input["patternProperties"]
+		if ok {
+			patternPropertiesObject, ok := patternPropertiesValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("patternProperties")
+
+			schemas := map[*regexp.Regexp]int{}
+			for property, elem := range patternPropertiesObject {
+				elemObject, ok := elem.(map[string]interface{})
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				propertyRegexp, err := regexp.Compile(property)
+				if err != nil {
+					return -1, ErrInvalidSchema
+				}
+
+				p.Push(property)
+				subSchema, err := p.Parse(elemObject)
+				if err != nil {
+					return -1, err
+				}
+
+				schemas[propertyRegexp] = subSchema
+
+				p.Pop()
+			}
+
+			s.PatternProperties.IsSet = true
+			s.PatternProperties.Schemas = schemas
+
+			p.Pop()
+		}
+
+		additionalPropertiesValue, ok := input["additionalProperties"]
+		if ok {
+			additionalPropertiesObject, ok := additionalPropertiesValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("additionalProperties")
+
+			subSchema, err := p.Parse(additionalPropertiesObject)
+			if err != nil {
+				return -1, err
+			}
+
+			s.AdditionalProperties.IsSet = true
+			s.AdditionalProperties.Schema = subSchema
+
+			p.Pop()
+		}
+
+		dependenciesValue, ok := input["dependencies"]
+		if ok {
+			dependenciesObject, ok := dependenciesValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("dependencies")
+
+			dependencies := map[string]schemaDependency{}
+			for key, value := range dependenciesObject {
+				p.Push(key)
+
+				switch val := value.(type) {
+				case map[string]interface{}:
+					subSchema, err := p.Parse(val)
+					if err != nil {
+						return -1, err
+					}
+
+					dependencies[key] = schemaDependency{
+						IsSchema: true,
+						Schema:   subSchema,
+					}
+				case []interface{}:
+					properties := []string{}
+					for _, property := range val {
+						propertyString, ok := property.(string)
+						if !ok {
+							return -1, ErrInvalidSchema
+						}
+
+						properties = append(properties, propertyString)
+					}
+
+					dependencies[key] = schemaDependency{
+						IsSchema:   false,
+						Properties: properties,
+					}
+				default:
+					return -1, ErrInvalidSchema
+				}
+
+				p.Pop()
+			}
+
+			s.Dependencies.IsSet = true
+			s.Dependencies.Deps = dependencies
+
+			p.Pop()
+		}
+
+		propertyNamesValue, ok := input["propertyNames"]
+		if ok {
+			propertyNamesObject, ok := propertyNamesValue.(map[string]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("propertyNames")
+
+			subSchema, err := p.Parse(propertyNamesObject)
+			if err != nil {
+				return -1, err
+			}
+
+			s.PropertyNames.IsSet = true
+			s.PropertyNames.Schema = subSchema
+
+			p.Pop()
+		}
+
+		allOfValue, ok := input["allOf"]
+		if ok {
+			allOfArray, ok := allOfValue.([]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("allOf")
+
+			s.AllOf.IsSet = true
+			s.AllOf.Schemas = make([]int, len(allOfArray))
+			for i, schemaValue := range allOfArray {
+				p.Push(strconv.FormatInt(int64(i), 10))
+
+				schemaObject, ok := schemaValue.(map[string]interface{})
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				subSchema, err := p.Parse(schemaObject)
+				if err != nil {
+					return -1, err
+				}
+
+				s.AllOf.Schemas[i] = subSchema
+				p.Pop()
+			}
+
+			p.Pop()
+		}
+
+		anyOfValue, ok := input["anyOf"]
+		if ok {
+			anyOfArray, ok := anyOfValue.([]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("anyOf")
+
+			s.AnyOf.IsSet = true
+			s.AnyOf.Schemas = make([]int, len(anyOfArray))
+			for i, schemaValue := range anyOfArray {
+				p.Push(strconv.FormatInt(int64(i), 10))
+
+				schemaObject, ok := schemaValue.(map[string]interface{})
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				subSchema, err := p.Parse(schemaObject)
+				if err != nil {
+					return -1, err
+				}
+
+				s.AnyOf.Schemas[i] = subSchema
+				p.Pop()
+			}
+
+			p.Pop()
+		}
+
+		oneOfValue, ok := input["oneOf"]
+		if ok {
+			oneOfArray, ok := oneOfValue.([]interface{})
+			if !ok {
+				return -1, ErrInvalidSchema
+			}
+
+			p.Push("oneOf")
+
+			s.OneOf.IsSet = true
+			s.OneOf.Schemas = make([]int, len(oneOfArray))
+			for i, schemaValue := range oneOfArray {
+				p.Push(strconv.FormatInt(int64(i), 10))
+
+				schemaObject, ok := schemaValue.(map[string]interface{})
+				if !ok {
+					return -1, ErrInvalidSchema
+				}
+
+				subSchema, err := p.Parse(schemaObject)
+				if err != nil {
+					return -1, err
+				}
+
+				s.OneOf.Schemas[i] = subSchema
+				p.Pop()
+			}
+
+			p.Pop()
+		}
+	default:
+		return -1, ErrInvalidSchema
 	}
 
 	index := p.registry.Insert(p.URI(), s)

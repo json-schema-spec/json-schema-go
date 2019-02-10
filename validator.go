@@ -12,7 +12,6 @@ const DefaultMaxStackDepth = 128
 
 // Validator compiles schemas and evaluates instances.
 type Validator struct {
-	schemas       []map[string]interface{}
 	registry      registry
 	maxStackDepth int
 	maxErrors     int
@@ -72,7 +71,7 @@ type ValidationError struct {
 // Each reference to a missing schema will result in an additional entry in the
 // returned list. It is therefore possible for the same URI to appear multiple
 // times in the list.
-func NewValidator(schemas []map[string]interface{}) (Validator, error) {
+func NewValidator(schemas []interface{}) (Validator, error) {
 	return NewValidatorWithConfig(schemas, ValidatorConfig{
 		MaxStackDepth: DefaultMaxStackDepth,
 	})
@@ -83,22 +82,21 @@ func NewValidator(schemas []map[string]interface{}) (Validator, error) {
 //
 // See NewValidator for how schemas will be used. See ValidatorConfig for
 // configuration options.
-func NewValidatorWithConfig(schemas []map[string]interface{}, config ValidatorConfig) (Validator, error) {
+func NewValidatorWithConfig(schemas []interface{}, config ValidatorConfig) (Validator, error) {
 	v := Validator{
-		schemas:       schemas,
 		maxStackDepth: config.MaxStackDepth,
 		maxErrors:     config.MaxErrors,
 	}
 
-	err := v.seal()
+	err := v.seal(schemas)
 	return v, err
 }
 
-func (v *Validator) seal() error {
+func (v *Validator) seal(schemas []interface{}) error {
 	registry := newRegistry(32)
-	rawSchemas := map[url.URL]map[string]interface{}{}
+	rawSchemas := map[url.URL]interface{}{}
 
-	for _, schema := range v.schemas {
+	for _, schema := range schemas {
 		parsed, err := parseRootSchema(&registry, schema)
 		if err != nil {
 			return err

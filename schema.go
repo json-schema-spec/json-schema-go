@@ -8,6 +8,7 @@ import (
 )
 
 type schema struct {
+	Bool                 schemaBool
 	ID                   url.URL
 	Ref                  schemaRef
 	Not                  schemaNot
@@ -42,6 +43,11 @@ type schema struct {
 	AllOf                schemaAllOf
 	AnyOf                schemaAnyOf
 	OneOf                schemaOneOf
+}
+
+type schemaBool struct {
+	IsSet bool
+	Value bool
 }
 
 type schemaNot struct {
