@@ -105,82 +105,62 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 		notValue, ok := input["not"]
 		if ok {
-			switch not := notValue.(type) {
-			case map[string]interface{}:
-				p.Push("not")
+			p.Push("not")
 
-				subSchema, err := p.Parse(not)
-				if err != nil {
-					return -1, err
-				}
-
-				s.Not.IsSet = true
-				s.Not.Schema = subSchema
-
-				p.Pop()
-			default:
-				return -1, ErrInvalidSchema
+			subSchema, err := p.Parse(notValue)
+			if err != nil {
+				return -1, err
 			}
+
+			s.Not.IsSet = true
+			s.Not.Schema = subSchema
+
+			p.Pop()
 		}
 
 		ifValue, ok := input["if"]
 		if ok {
-			switch ifx := ifValue.(type) {
-			case map[string]interface{}:
-				p.Push("if")
+			p.Push("if")
 
-				subSchema, err := p.Parse(ifx)
-				if err != nil {
-					return -1, err
-				}
-
-				s.If.IsSet = true
-				s.If.Schema = subSchema
-
-				p.Pop()
-			default:
-				return -1, ErrInvalidSchema
+			subSchema, err := p.Parse(ifValue)
+			if err != nil {
+				return -1, err
 			}
+
+			s.If.IsSet = true
+			s.If.Schema = subSchema
+
+			p.Pop()
 		}
 
 		thenValue, ok := input["then"]
 		if ok {
-			switch then := thenValue.(type) {
-			case map[string]interface{}:
-				p.Push("then")
+			p.Push("then")
 
-				subSchema, err := p.Parse(then)
-				if err != nil {
-					return -1, err
-				}
-
-				s.Then.IsSet = true
-				s.Then.Schema = subSchema
-
-				p.Pop()
-			default:
-				return -1, ErrInvalidSchema
+			subSchema, err := p.Parse(thenValue)
+			if err != nil {
+				return -1, err
 			}
+
+			s.Then.IsSet = true
+			s.Then.Schema = subSchema
+
+			p.Pop()
 		}
 
 		elseValue, ok := input["else"]
 		if ok {
-			switch elsex := elseValue.(type) {
-			case map[string]interface{}:
-				p.Push("else")
+			p.Push("else")
 
-				subSchema, err := p.Parse(elsex)
-				if err != nil {
-					return -1, err
-				}
-
-				s.Else.IsSet = true
-				s.Else.Schema = subSchema
-
-				p.Pop()
-			default:
-				return -1, ErrInvalidSchema
+			subSchema, err := p.Parse(elseValue)
+			if err != nil {
+				return -1, err
 			}
+
+			s.Else.IsSet = true
+			s.Else.Schema = subSchema
+
+			p.Pop()
 		}
 
 		typeValue, ok := input["type"]
@@ -221,19 +201,6 @@ func (p *parser) Parse(input interface{}) (int, error) {
 		itemsValue, ok := input["items"]
 		if ok {
 			switch items := itemsValue.(type) {
-			case map[string]interface{}:
-				p.Push("items")
-
-				subSchema, err := p.Parse(items)
-				if err != nil {
-					return -1, err
-				}
-
-				s.Items.IsSet = true
-				s.Items.IsSingle = true
-				s.Items.Schemas = []int{subSchema}
-
-				p.Pop()
 			case []interface{}:
 				p.Push("items")
 
@@ -243,11 +210,6 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 				for i, item := range items {
 					p.Push(strconv.FormatInt(int64(i), 10))
-
-					item, ok := item.(map[string]interface{})
-					if !ok {
-						return -1, ErrInvalidSchema
-					}
 
 					subSchema, err := p.Parse(item)
 					if err != nil {
@@ -260,7 +222,18 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 				p.Pop()
 			default:
-				return -1, ErrInvalidSchema
+				p.Push("items")
+
+				subSchema, err := p.Parse(items)
+				if err != nil {
+					return -1, err
+				}
+
+				s.Items.IsSet = true
+				s.Items.IsSingle = true
+				s.Items.Schemas = []int{subSchema}
+
+				p.Pop()
 			}
 		}
 
@@ -394,14 +367,9 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 		additionalItemsValue, ok := input["additionalItems"]
 		if ok {
-			additionalItemsObject, ok := additionalItemsValue.(map[string]interface{})
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
 			p.Push("additionalItems")
 
-			subSchema, err := p.Parse(additionalItemsObject)
+			subSchema, err := p.Parse(additionalItemsValue)
 			if err != nil {
 				return -1, err
 			}
@@ -465,14 +433,9 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 		containsValue, ok := input["contains"]
 		if ok {
-			containsObject, ok := containsValue.(map[string]interface{})
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
 			p.Push("contains")
 
-			subSchema, err := p.Parse(containsObject)
+			subSchema, err := p.Parse(containsValue)
 			if err != nil {
 				return -1, err
 			}
@@ -555,13 +518,8 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 			schemas := map[string]int{}
 			for property, elem := range propertiesObject {
-				elemObject, ok := elem.(map[string]interface{})
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
 				p.Push(property)
-				subSchema, err := p.Parse(elemObject)
+				subSchema, err := p.Parse(elem)
 				if err != nil {
 					return -1, err
 				}
@@ -588,18 +546,13 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 			schemas := map[*regexp.Regexp]int{}
 			for property, elem := range patternPropertiesObject {
-				elemObject, ok := elem.(map[string]interface{})
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
 				propertyRegexp, err := regexp.Compile(property)
 				if err != nil {
 					return -1, ErrInvalidSchema
 				}
 
 				p.Push(property)
-				subSchema, err := p.Parse(elemObject)
+				subSchema, err := p.Parse(elem)
 				if err != nil {
 					return -1, err
 				}
@@ -617,14 +570,9 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 		additionalPropertiesValue, ok := input["additionalProperties"]
 		if ok {
-			additionalPropertiesObject, ok := additionalPropertiesValue.(map[string]interface{})
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
 			p.Push("additionalProperties")
 
-			subSchema, err := p.Parse(additionalPropertiesObject)
+			subSchema, err := p.Parse(additionalPropertiesValue)
 			if err != nil {
 				return -1, err
 			}
@@ -649,16 +597,6 @@ func (p *parser) Parse(input interface{}) (int, error) {
 				p.Push(key)
 
 				switch val := value.(type) {
-				case map[string]interface{}:
-					subSchema, err := p.Parse(val)
-					if err != nil {
-						return -1, err
-					}
-
-					dependencies[key] = schemaDependency{
-						IsSchema: true,
-						Schema:   subSchema,
-					}
 				case []interface{}:
 					properties := []string{}
 					for _, property := range val {
@@ -675,7 +613,15 @@ func (p *parser) Parse(input interface{}) (int, error) {
 						Properties: properties,
 					}
 				default:
-					return -1, ErrInvalidSchema
+					subSchema, err := p.Parse(val)
+					if err != nil {
+						return -1, err
+					}
+
+					dependencies[key] = schemaDependency{
+						IsSchema: true,
+						Schema:   subSchema,
+					}
 				}
 
 				p.Pop()
@@ -689,14 +635,9 @@ func (p *parser) Parse(input interface{}) (int, error) {
 
 		propertyNamesValue, ok := input["propertyNames"]
 		if ok {
-			propertyNamesObject, ok := propertyNamesValue.(map[string]interface{})
-			if !ok {
-				return -1, ErrInvalidSchema
-			}
-
 			p.Push("propertyNames")
 
-			subSchema, err := p.Parse(propertyNamesObject)
+			subSchema, err := p.Parse(propertyNamesValue)
 			if err != nil {
 				return -1, err
 			}
@@ -721,12 +662,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			for i, schemaValue := range allOfArray {
 				p.Push(strconv.FormatInt(int64(i), 10))
 
-				schemaObject, ok := schemaValue.(map[string]interface{})
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
-				subSchema, err := p.Parse(schemaObject)
+				subSchema, err := p.Parse(schemaValue)
 				if err != nil {
 					return -1, err
 				}
@@ -752,12 +688,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			for i, schemaValue := range anyOfArray {
 				p.Push(strconv.FormatInt(int64(i), 10))
 
-				schemaObject, ok := schemaValue.(map[string]interface{})
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
-				subSchema, err := p.Parse(schemaObject)
+				subSchema, err := p.Parse(schemaValue)
 				if err != nil {
 					return -1, err
 				}
@@ -783,12 +714,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			for i, schemaValue := range oneOfArray {
 				p.Push(strconv.FormatInt(int64(i), 10))
 
-				schemaObject, ok := schemaValue.(map[string]interface{})
-				if !ok {
-					return -1, ErrInvalidSchema
-				}
-
-				subSchema, err := p.Parse(schemaObject)
+				subSchema, err := p.Parse(schemaValue)
 				if err != nil {
 					return -1, err
 				}
