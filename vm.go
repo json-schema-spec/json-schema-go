@@ -615,15 +615,13 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 			for key, dep := range schema.Dependencies.Deps {
 				vm.pushSchemaToken(key)
 
-				if value, ok := val[key]; ok {
+				if _, ok := val[key]; ok {
 					if dep.IsSchema {
 						propertySchema := vm.registry.GetIndex(dep.Schema)
 
-						vm.pushInstanceToken(key)
-						if err := vm.execSchema(propertySchema, value); err != nil {
+						if err := vm.execSchema(propertySchema, val); err != nil {
 							return err
 						}
-						vm.popInstanceToken()
 					} else {
 						for i, property := range dep.Properties {
 							if _, ok := val[property]; !ok {

@@ -26,7 +26,12 @@
         "instance": {
           "foo": null
         },
-        "errors": []
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/dependencies/foo/type"
+          }
+        ]
       },
       {
         "instance": {
@@ -43,7 +48,12 @@
           "baz": null,
           "quux": null
         },
-        "errors": []
+        "errors": [
+          {
+            "instancePath": "",
+            "schemaPath": "/dependencies/foo/type"
+          }
+        ]
       },
       {
         "instance": {
@@ -51,7 +61,7 @@
         },
         "errors": [
           {
-            "instancePath": "/foo",
+            "instancePath": "",
             "schemaPath": "/dependencies/foo/type"
           }
         ]
@@ -76,7 +86,7 @@
         },
         "errors": [
           {
-            "instancePath": "/foo",
+            "instancePath": "",
             "schemaPath": "/dependencies/foo/type"
           },
           {
