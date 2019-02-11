@@ -11,7 +11,14 @@ import (
 	"github.com/ucarion/json-pointer"
 )
 
-const epsilon = 1e-3
+// Epsilon is the value used to determine if a floating-point value is "close
+// enough" to be considered an integer.
+//
+// You may adjust this value if you require many significant digits before
+// considering a number to be essentially integral, but consider that
+// floating-point arithemtic has different precision based on the range of
+// numbers being represented.
+const Epsilon = 1e-3
 
 var errMaxErrors = errors.New("internal error for maximum errors")
 
@@ -310,7 +317,7 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		}
 
 		if schema.MultipleOf.IsSet {
-			if math.Abs(math.Mod(val, schema.MultipleOf.Value)) > epsilon {
+			if math.Abs(math.Mod(val, schema.MultipleOf.Value)) > Epsilon {
 				vm.pushSchemaToken("multipleOf")
 				if err := vm.reportError(); err != nil {
 					return err
@@ -340,7 +347,7 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		}
 
 		if schema.ExclusiveMaximum.IsSet {
-			if val > schema.ExclusiveMaximum.Value-epsilon {
+			if val > schema.ExclusiveMaximum.Value-Epsilon {
 				vm.pushSchemaToken("exclusiveMaximum")
 				if err := vm.reportError(); err != nil {
 					return err
@@ -350,7 +357,7 @@ func (vm *vm) execSchema(schema schema, instance interface{}) error {
 		}
 
 		if schema.ExclusiveMinimum.IsSet {
-			if val < schema.ExclusiveMinimum.Value+epsilon {
+			if val < schema.ExclusiveMinimum.Value+Epsilon {
 				vm.pushSchemaToken("exclusiveMinimum")
 				if err := vm.reportError(); err != nil {
 					return err

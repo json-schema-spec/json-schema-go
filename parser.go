@@ -317,7 +317,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			}
 
 			maxLengthInt, rem := math.Modf(maxLengthNumber)
-			if rem > epsilon {
+			if rem > Epsilon {
 				return -1, ErrInvalidSchema
 			}
 
@@ -337,7 +337,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			}
 
 			minLengthInt, rem := math.Modf(minLengthNumber)
-			if rem > epsilon {
+			if rem > Epsilon {
 				return -1, ErrInvalidSchema
 			}
 
@@ -388,7 +388,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			}
 
 			maxItemsInt, rem := math.Modf(maxItemsNumber)
-			if rem > epsilon {
+			if rem > Epsilon {
 				return -1, ErrInvalidSchema
 			}
 
@@ -408,7 +408,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			}
 
 			minItemsInt, rem := math.Modf(minItemsNumber)
-			if rem > epsilon {
+			if rem > Epsilon {
 				return -1, ErrInvalidSchema
 			}
 
@@ -454,7 +454,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			}
 
 			maxPropertiesInt, rem := math.Modf(maxPropertiesNumber)
-			if rem > epsilon {
+			if rem > Epsilon {
 				return -1, ErrInvalidSchema
 			}
 
@@ -474,7 +474,7 @@ func (p *parser) Parse(input interface{}) (int, error) {
 			}
 
 			minPropertiesInt, rem := math.Modf(minPropertiesNumber)
-			if rem > epsilon {
+			if rem > Epsilon {
 				return -1, ErrInvalidSchema
 			}
 
