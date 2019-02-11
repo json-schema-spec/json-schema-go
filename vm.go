@@ -18,7 +18,7 @@ import (
 // considering a number to be essentially integral, but consider that
 // floating-point arithemtic has different precision based on the range of
 // numbers being represented.
-const Epsilon = 1e-3
+var Epsilon = 1e-3
 
 var errMaxErrors = errors.New("internal error for maximum errors")
 
