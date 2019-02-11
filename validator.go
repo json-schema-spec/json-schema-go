@@ -124,12 +124,7 @@ func (v *Validator) seal(schemas []interface{}) error {
 					return err
 				}
 
-				refSchemaObject, ok := (*rawRefSchema).(map[string]interface{})
-				if !ok {
-					return ErrInvalidSchema
-				}
-
-				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, refSchemaObject)
+				_, err = parseSubSchema(&registry, baseURI, ptr.Tokens, *rawRefSchema)
 				if err != nil {
 					return err
 				}
