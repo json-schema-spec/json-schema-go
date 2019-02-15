@@ -10,8 +10,8 @@ import (
 	"sort"
 	"testing"
 
+	jsonpointer "github.com/json-schema-spec/json-pointer-go"
 	"github.com/stretchr/testify/assert"
-	"github.com/ucarion/json-pointer"
 )
 
 type testCase struct {

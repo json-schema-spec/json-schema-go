@@ -3,7 +3,7 @@ package jsonschema
 import (
 	"net/url"
 
-	"github.com/ucarion/json-pointer"
+	jsonpointer "github.com/json-schema-spec/json-pointer-go"
 )
 
 // DefaultMaxStackDepth is the default value for MaxStackDepth in

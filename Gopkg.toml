@@ -30,8 +30,8 @@
   version = "1.3.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/ucarion/json-pointer"
+  name = "github.com/json-schema-spec/json-pointer-go"
+  version = "0.1.0"
 
 [prune]
   go-tests = true

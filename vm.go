@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/ucarion/json-pointer"
+	jsonpointer "github.com/json-schema-spec/json-pointer-go"
 )
 
 // Epsilon is the value used to determine if a floating-point value is "close

@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/ucarion/json-pointer"
+	jsonpointer "github.com/json-schema-spec/json-pointer-go"
 )
 
 type schema struct {

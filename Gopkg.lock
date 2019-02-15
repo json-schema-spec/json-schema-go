@@ -10,6 +10,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:cc836ad7f14d580a309c931e4f2d56b3bb326bb2805bfaa61f0e9b4295e42a99"
+  name = "github.com/json-schema-spec/json-pointer-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3eced830a491bc62c47c1283c67ddff3aae819da"
+  version = "v0.1.0"
+
+[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
@@ -25,20 +33,12 @@
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
 
-[[projects]]
-  branch = "master"
-  digest = "1:a7360aeec6e31d57a5a4bdabaa760fa240c4d4e55325f52701a71c44653ea731"
-  name = "github.com/ucarion/json-pointer"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "08f4c85b0419395206969220539ee5a453a3195d"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/json-schema-spec/json-pointer-go",
     "github.com/stretchr/testify/assert",
-    "github.com/ucarion/json-pointer",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -4,8 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/ucarion/json-pointer"
-
+	jsonpointer "github.com/json-schema-spec/json-pointer-go"
 	"github.com/stretchr/testify/assert"
 )
 
